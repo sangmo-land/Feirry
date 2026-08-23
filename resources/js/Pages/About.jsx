@@ -9,7 +9,7 @@ import { Reveal } from '@/Components/Motion';
 import { CtaBand, Crumb, PartnerStrip, SplitFeature, StatsBand, ValuesGrid } from '@/Sections/Shared';
 
 export default function About({ milestones = [], certifications = [], leadership = [], partners = [], projectCount }) {
-    const { t, site } = useSite();
+    const { t, site, locationAnchor } = useSite();
 
     return (
         <>
@@ -236,12 +236,30 @@ export default function About({ milestones = [], certifications = [], leadership
             {/* ---------------------------------------------------------- */}
             {/* Where to find us                                            */}
             {/* ---------------------------------------------------------- */}
-            <Section size="lg">
+            {/*
+                The id is the address this section is reachable at, and the
+                one the Place node in the page's structured data carries. It
+                comes from the server (config `site.seo.location_anchor`) so
+                the markup and the schema describing it name it once.
+
+                The map itself is an iframe belonging to google.com, and
+                nothing inside it is ever indexed as part of this page. What a
+                crawler can read is what surrounds it: the heading, the postal
+                address, the opening hours and a plain link to the pin — which
+                is why those are real text here rather than an image or a
+                tooltip.
+            */}
+            <Section
+                size="lg"
+                id={locationAnchor}
+                aria-labelledby={`${locationAnchor}-title`}
+            >
                 <div className="shell">
                     <SectionHeading
                         eyebrow={t('about.location_eyebrow')}
                         title={t('about.location_title')}
                         lead={t('about.location_lead')}
+                        titleId={`${locationAnchor}-title`}
                     />
 
                     <div className="mt-12 grid gap-10 lg:grid-cols-12 lg:gap-14">
@@ -285,6 +303,38 @@ export default function About({ milestones = [], certifications = [], leadership
                             <Reveal delay={0.12}>
                                 <OfficeMap ratio="aspect-[16/10] sm:aspect-[16/9]" />
                             </Reveal>
+
+                            {/* The overlay button on the frame is the same
+                                link, but it sits above an iframe and reads as
+                                chrome. This one is a plain sentence naming the
+                                district and the city, which is the form a
+                                crawler and a screen reader both get something
+                                out of. */}
+                            {site.contact?.maps_url && (
+                                <Reveal delay={0.2}>
+                                    <a
+                                        href={site.contact.maps_url}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className="group/pin mt-5 inline-flex items-center gap-2.5 text-sm text-concrete-600 transition-colors duration-400 hover:text-brand-deep"
+                                    >
+                                        <Icon
+                                            name="map-pin"
+                                            className="size-4 shrink-0 text-brand-deep"
+                                            strokeWidth={2}
+                                        />
+                                        <span>
+                                            {t('contact.find_us')} — {site.contact?.district},{' '}
+                                            {site.contact?.city}, {site.contact?.country}
+                                        </span>
+                                        <Icon
+                                            name="arrow-up-right"
+                                            className="size-3.5 transition-transform duration-500 [transition-timing-function:var(--ease-out-expo)] group-hover/pin:translate-x-0.5 group-hover/pin:-translate-y-0.5"
+                                            strokeWidth={2}
+                                        />
+                                    </a>
+                                </Reveal>
+                            )}
                         </div>
                     </div>
                 </div>

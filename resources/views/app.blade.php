@@ -39,6 +39,18 @@
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:site" content="{{ config('site.seo.twitter') }}">
 
+    {{-- Search-console ownership. The meta-tag proof rather than the uploaded
+         file: a deploy replaces public/, and a verification that disappears
+         with a build is a property that silently unverifies itself. Emitted
+         only when a token is set — an empty content attribute reads to the
+         verifier as a failed proof rather than an absent one. --}}
+    @if ($google = config('site.seo.verification.google'))
+        <meta name="google-site-verification" content="{{ $google }}">
+    @endif
+    @if ($bing = config('site.seo.verification.bing'))
+        <meta name="msvalidate.01" content="{{ $bing }}">
+    @endif
+
     {{-- Each language now has its own address, so these point at the real
          counterpart rather than all three naming the current URL. --}}
     @foreach ($alternates as $code => $href)
@@ -63,7 +75,16 @@
     @inertiaHead
 </head>
 <body class="antialiased">
+    {{-- Everything React renders is absent from the response itself, so a
+         reader that does not execute JavaScript gets an empty page. Pages that
+         name a partial through Seo::set(['noscript' => ...]) put their content
+         here, in the HTML as delivered. It is the same content the page
+         renders, from the same source — not a second version of it. --}}
     <noscript>
+        @isset($seo['noscript'])
+            @include($seo['noscript'])
+        @endisset
+
         <div style="padding:2rem;font-family:sans-serif;text-align:center">
             Ce site a besoin de JavaScript pour fonctionner. / This site requires JavaScript.
         </div>

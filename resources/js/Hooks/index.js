@@ -20,9 +20,22 @@ export function useSite() {
             locale: props.locale ?? 'fr',
             locales: props.locales ?? {},
             flash: props.flash ?? {},
+            // The id the company page's location section renders with. It
+            // comes from the server so that the markup, the structured data
+            // describing it and any link pointing at it all name it once.
+            locationAnchor: props.locationAnchor ?? 'localisation',
             t: (key, replacements) => translate(props.translations ?? {}, key, replacements),
         }),
-        [props.site, props.seo, props.hero, props.locale, props.locales, props.flash, props.translations],
+        [
+            props.site,
+            props.seo,
+            props.hero,
+            props.locale,
+            props.locales,
+            props.flash,
+            props.locationAnchor,
+            props.translations,
+        ],
     );
 }
 

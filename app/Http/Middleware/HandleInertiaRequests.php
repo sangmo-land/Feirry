@@ -29,6 +29,11 @@ class HandleInertiaRequests extends Middleware
             // route file builds the URLs from — one source, never two.
             'segments' => config('site.segments'),
             'defaultLocale' => config('site.default_locale'),
+            // The fragment the company page's location section is addressed
+            // by. Shared rather than written twice, so the id rendered into
+            // the markup and the id inside the structured data describing it
+            // cannot drift apart.
+            'locationAnchor' => Seo::locationAnchor(),
             'translations' => fn () => trans('site'),
             'site' => fn () => SiteSettings::forFrontend($locale),
             'seo' => fn () => Seo::get(),

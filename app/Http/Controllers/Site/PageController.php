@@ -21,7 +21,19 @@ class PageController extends Controller
         Seo::set([
             'title' => __('site.about.title'),
             'description' => __('site.about.hero_lead'),
+            // This is the page that carries the office address, the opening
+            // hours and the map. None of it exists in the response until React
+            // has run, so it is also written out server-side.
+            'noscript' => 'partials.location-noscript',
         ]);
+
+        /*
+         * The richer graph, in place of the organisation node every other page
+         * gets: it names the location section, ties the pin and the opening
+         * hours to it, and addresses it at the fragment the section renders
+         * with. Set after the page, because it quotes the page's own title.
+         */
+        Seo::schema(Seo::locationSchema());
 
         return Inertia::render('About', [
             'milestones' => Milestone::published()->get()->map->toArrayLocalised(),

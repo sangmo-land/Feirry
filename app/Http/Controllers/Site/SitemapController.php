@@ -8,6 +8,7 @@ use App\Models\Post;
 use App\Models\Project;
 use App\Models\Service;
 use Illuminate\Http\Response;
+use Illuminate\Support\Collection;
 
 class SitemapController extends Controller
 {
@@ -20,6 +21,13 @@ class SitemapController extends Controller
          *
          * Route names carry the locale: `about` is the French URL, `en.about`
          * the English one.
+         *
+         * Each entry is built as a group — the same page in every language —
+         * rather than a flat list, because every URL in the group has to name
+         * every other one as its hreflang alternate. Google treats the pair as
+         * translations of one page only when the declaration is reciprocal;
+         * listing them as two unrelated URLs is how a translated site ends up
+         * competing with itself.
          */
         $pages = [
             ['home', '1.0', 'weekly'],
@@ -42,45 +50,83 @@ class SitemapController extends Controller
             ['careers.show', JobOpening::published()->get(), '0.5', 'weekly'],
         ];
 
-        $default = config('site.default_locale');
         $urls = collect();
 
-        foreach (array_keys(config('site.locales')) as $locale) {
-            $name = fn (string $route) => $locale === $default ? $route : "{$locale}.{$route}";
+        foreach ($pages as [$route, $priority, $freq]) {
+            $urls = $urls->concat($this->group($route, null, $priority, $freq));
+        }
 
-            foreach ($pages as [$route, $priority, $freq]) {
-                $urls->push(['loc' => route($name($route)), 'priority' => $priority, 'freq' => $freq]);
-            }
-
-            foreach ($records as [$route, $models, $priority, $freq]) {
-                foreach ($models as $model) {
-                    $urls->push([
-                        'loc' => route($name($route), $model),
-                        'priority' => $priority,
-                        'freq' => $freq,
-                        'lastmod' => $model->updated_at?->toAtomString(),
-                    ]);
-                }
+        foreach ($records as [$route, $models, $priority, $freq]) {
+            foreach ($models as $model) {
+                $urls = $urls->concat(
+                    $this->group($route, $model, $priority, $freq, $model->updated_at?->toAtomString()),
+                );
             }
         }
 
         $xml = view('sitemap', ['urls' => $urls])->render();
 
-        return response($xml, 200, ['Content-Type' => 'application/xml']);
+        return response($xml, 200, ['Content-Type' => 'application/xml; charset=UTF-8']);
     }
 
     public function robots(): Response
     {
+        /*
+         * Served from here rather than from a file in public/, so the sitemap
+         * line is always the current host and cannot be left behind by a
+         * deploy. There must be no public/robots.txt: the web server hands a
+         * real file over before Laravel sees the request, and the static one
+         * that shipped with the skeleton named no sitemap at all.
+         */
         $body = implode("\n", [
             'User-agent: *',
             'Allow: /',
             'Disallow: /admin',
             'Disallow: /storage/applications',
+            // A URL that always redirects; letting a crawler queue and follow
+            // it wastes budget on a page that never has content of its own.
+            'Disallow: /langue/',
             '',
             'Sitemap: '.route('sitemap'),
             '',
         ]);
 
-        return response($body, 200, ['Content-Type' => 'text/plain']);
+        return response($body, 200, ['Content-Type' => 'text/plain; charset=UTF-8']);
+    }
+
+    /**
+     * One page in every language it exists in, each entry naming all the others.
+     *
+     * `x-default` points at the language that owns the root, which is what a
+     * crawler falls back to when it cannot match the reader to either.
+     */
+    protected function group(
+        string $route,
+        mixed $model = null,
+        string $priority = '0.5',
+        string $freq = 'monthly',
+        ?string $lastmod = null,
+    ): Collection {
+        $default = config('site.default_locale');
+
+        $alternates = collect(array_keys(config('site.locales')))
+            ->mapWithKeys(function (string $locale) use ($route, $model, $default) {
+                $name = $locale === $default ? $route : "{$locale}.{$route}";
+
+                return [$locale => $model ? route($name, $model) : route($name)];
+            });
+
+        $alternates = $alternates->put('x-default', $alternates[$default]);
+
+        return $alternates
+            ->except('x-default')
+            ->map(fn (string $loc) => array_filter([
+                'loc' => $loc,
+                'lastmod' => $lastmod,
+                'freq' => $freq,
+                'priority' => $priority,
+                'alternates' => $alternates->all(),
+            ]))
+            ->values();
     }
 }

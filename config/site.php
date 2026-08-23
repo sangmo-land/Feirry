@@ -34,6 +34,25 @@ return [
         'email_devis' => 'devis@feirry.org',
         'hours_fr' => 'Lun – Ven : 07h30 – 17h30 · Sam : 08h00 – 13h00',
         'hours_en' => 'Mon – Fri: 7:30am – 5:30pm · Sat: 8:00am – 1:00pm',
+
+        /*
+        | The same opening hours a second time, in the shape schema.org asks
+        | for. The strings above are what a visitor reads; this is what Google
+        | parses into the opening-hours line of a local result. They are kept
+        | adjacent so a change to one is an obvious prompt to change the other.
+        */
+        'opening_hours' => [
+            [
+                'days' => ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
+                'opens' => '07:30',
+                'closes' => '17:30',
+            ],
+            [
+                'days' => ['Saturday'],
+                'opens' => '08:00',
+                'closes' => '13:00',
+            ],
+        ],
         // The pin the client shared, resolved from its maps.app.goo.gl short
         // link. The previous pair pointed at the middle of Bonanjo, some 2.7 km
         // west of the office. All three are overridable from the dashboard.
@@ -110,6 +129,40 @@ return [
     'seo' => [
         'default_image' => '/images/og/feirry-og.jpg',
         'twitter' => '@feirry',
+
+        /*
+        | The logo as structured data reports it. Deliberately its own key
+        | rather than reusing the social card: Google wants a plain rendering
+        | of the mark, and will not read an SVG — which is what favicon.svg
+        | is — so this has to stay a raster file. It falls back to the social
+        | card, which at least carries the name, until a square PNG exists.
+        */
+        'logo' => '/images/og/feirry-og.jpg',
+
+        /*
+        | Search-console ownership proofs. Google and Bing both accept a meta
+        | tag in the <head> as an alternative to uploading a file, which is the
+        | form that survives a deploy: the token lives in the environment, so
+        | it is set once per property and never overwritten by a build.
+        |
+        | Empty means the tag is not emitted at all — an empty content
+        | attribute reads to the verifier as a failed proof rather than an
+        | absent one.
+        */
+        'verification' => [
+            'google' => env('GOOGLE_SITE_VERIFICATION'),
+            'bing' => env('BING_SITE_VERIFICATION'),
+        ],
+
+        /*
+        | The fragment the location section on the company page is addressed
+        | by. Named once here because three places have to agree on it: the
+        | id rendered into the markup, the URL inside the Place schema, and
+        | the link the footer points at. A fragment is not a separate URL to a
+        | crawler, so what it buys is a stable address for the section and a
+        | subject Google can attach the map result to.
+        */
+        'location_anchor' => 'localisation',
     ],
 
 ];

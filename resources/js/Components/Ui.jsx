@@ -144,6 +144,10 @@ export function SectionHeading({
     tone = 'dark',
     className,
     titleClassName,
+    // Lets the surrounding <section> point aria-labelledby at this heading,
+    // which is what turns an anchored section into a named landmark rather
+    // than an unlabelled region a screen reader skips past.
+    titleId,
 }) {
     return (
         <div
@@ -162,6 +166,7 @@ export function SectionHeading({
                 )}
 
                 <h2
+                    id={titleId}
                     className={cn(
                         'mt-5 text-[clamp(2rem,5.2vw,4.25rem)]',
                         tone === 'dark' ? 'text-ink-900' : 'text-concrete-50',

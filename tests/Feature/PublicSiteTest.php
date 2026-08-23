@@ -164,7 +164,9 @@ class PublicSiteTest extends TestCase
 
         $response = $this->get('/sitemap.xml')->assertOk();
 
-        $response->assertHeader('Content-Type', 'application/xml');
+        // The sitemap carries French page titles and slugs, so it names its
+        // encoding rather than leaving a parser to guess at one.
+        $response->assertHeader('Content-Type', 'application/xml; charset=UTF-8');
         $response->assertDontSee($hidden->slug);
         $response->assertSee(Service::first()->slug);
     }

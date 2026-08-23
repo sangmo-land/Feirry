@@ -201,6 +201,65 @@ de détecter les conflits entre GSAP et le rendu React d'Inertia.
 
 ---
 
+## Google Search Console
+
+Tout ce que Google lit est produit par l'application — rien n'est un fichier
+déposé dans `public/`, parce qu'un déploiement remplace `public/` et qu'une
+vérification qui disparaît avec un build est une propriété qui se
+dévérifie toute seule.
+
+| Adresse | Produite par |
+| --- | --- |
+| `/robots.txt` | `SitemapController@robots` — bloque `/admin`, `/storage/applications` et `/langue/`, et pointe vers le sitemap |
+| `/sitemap.xml` | `SitemapController@index` — les deux langues, avec les alternates `hreflang` réciproques |
+| `<link rel="canonical">`, `hreflang`, Open Graph, JSON-LD | `resources/views/app.blade.php`, alimenté par `App\Support\Seo` |
+
+> **Il ne doit pas exister de `public/robots.txt`.** Le serveur web sert un
+> fichier réel avant que Laravel ne voie la requête : celui qui accompagnait
+> le squelette Laravel ne nommait aucun sitemap et masquait la route.
+> `SearchEngineTest` vérifie son absence.
+
+### Mise en service
+
+1. **Renseigner `APP_URL`** avec le domaine définitif, en `https://`. C'est
+   l'adresse qu'écrivent le sitemap, les balises canoniques et les `@id` des
+   données structurées. Tant qu'elle vaut `localhost`, le sitemap déclare des
+   URL que Google ne peut pas atteindre.
+2. **Créer la propriété** dans Search Console — de préférence une propriété
+   de domaine (vérification DNS), qui couvre `http`, `https`, `www` et les
+   sous-domaines d'un coup.
+3. **Sinon, la balise méta** : coller le jeton dans `GOOGLE_SITE_VERIFICATION`
+   (le contenu de `content="…"`, pas la balise entière). Vide, aucune balise
+   n'est émise — un `content` vide se lit comme une preuve ratée, pas comme
+   une preuve absente. `BING_SITE_VERIFICATION` fait de même pour Bing.
+4. **Soumettre `https://…/sitemap.xml`** dans *Sitemaps*.
+5. **Contrôler le rendu** : *Inspection de l'URL* → *Tester l'URL en direct* →
+   *HTML rendu*. Le site est rendu côté client ; c'est le seul écran qui dit si
+   Googlebot a bien exécuté le JavaScript.
+
+### La localisation, côté recherche
+
+La section « Nous trouver » de `/entreprise` porte l'id `#localisation`
+(`config/site.seo.location_anchor`, partagé jusqu'au composant React), et la
+page émet un graphe JSON-LD où un nœud `Place` porte ce même fragment, avec
+les coordonnées, le lien vers le point et les horaires d'ouverture.
+
+Deux limites qu'il vaut mieux connaître d'avance :
+
+- **La carte elle-même n'est jamais indexée.** C'est une iframe appartenant à
+  `google.com` ; son contenu n'est pas celui de la page. Ce qu'un robot lit,
+  c'est le texte autour — titre, adresse postale, horaires, lien vers le point.
+  D'où leur présence en texte réel plutôt qu'en image.
+- **Un fragment n'est pas une URL.** `/entreprise#localisation` n'aura jamais sa
+  propre ligne dans l'index. L'ancre donne une adresse stable à la section et un
+  sujet auquel rattacher la fiche ; c'est Google qui décide, ou non, de pointer
+  directement dessus depuis un résultat.
+
+Pour apparaître sur Google Maps et dans le panneau latéral, les données
+structurées ne suffisent pas : il faut **une fiche Google Business Profile**
+vérifiée à la même adresse, au même nom et au même numéro que
+`config/site.php`. Le balisage confirme la fiche, il ne la remplace pas.
+
 ## À faire avant la mise en ligne
 
 1. **Changer le mot de passe administrateur.**
@@ -217,9 +276,12 @@ de détecter les conflits entre GSAP et le rendu React d'Inertia.
 5. **Configurer l'envoi d'e-mails** (`MAIL_*`). Les demandes sont enregistrées
    en base et visibles dans le back-office ; aucune notification n'est envoyée
    tant que le SMTP n'est pas renseigné.
-6. **Passer en HTTPS** et renseigner `APP_URL`, utilisée par le sitemap et les
-   balises canoniques.
-7. **`composer deploy`** après chaque mise en production.
+6. **Passer en HTTPS** et renseigner `APP_URL`, utilisée par le sitemap, les
+   balises canoniques et les `@id` des données structurées. Voir la section
+   **Google Search Console**.
+7. **Créer la fiche Google Business Profile** à l'adresse de `config/site.php`.
+   Sans elle, le balisage de localisation n'a aucune fiche à confirmer.
+8. **`composer deploy`** après chaque mise en production.
 
 ## Licence
 

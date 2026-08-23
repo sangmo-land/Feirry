@@ -343,13 +343,14 @@ export function PageTransition() {
  * `flex-col-reverse` puts it at the bottom of the column while leaving it
  * first in the DOM, so it also takes focus first.
  */
-const SOCIAL_RAIL = ['whatsapp', 'facebook', 'linkedin', 'instagram', 'youtube'];
+const SOCIAL_RAIL = ['whatsapp', 'facebook', 'linkedin', 'instagram', 'tiktok', 'youtube'];
 
 const SOCIAL_LABELS = {
     whatsapp: 'WhatsApp',
     facebook: 'Facebook',
     linkedin: 'LinkedIn',
     instagram: 'Instagram',
+    tiktok: 'TikTok',
     youtube: 'YouTube',
 };
 

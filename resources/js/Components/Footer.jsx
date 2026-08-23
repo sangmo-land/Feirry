@@ -31,6 +31,7 @@ const SOCIAL_ICONS = {
     facebook: 'facebook',
     linkedin: 'linkedin',
     instagram: 'instagram',
+    tiktok: 'tiktok',
     youtube: 'youtube',
 };
 

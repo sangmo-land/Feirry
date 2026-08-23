@@ -81,6 +81,7 @@ import {
     FacebookIcon,
     InstagramIcon,
     LinkedinIcon,
+    TiktokIcon,
     WhatsappIcon,
     YoutubeIcon,
 } from '@/Lib/brandIcons';
@@ -153,6 +154,7 @@ export const ICONS = {
     'trending-up': TrendingUp,
     upload: Upload,
     users: Users,
+    tiktok: TiktokIcon,
     whatsapp: WhatsappIcon,
     workflow: Workflow,
     wrench: Wrench,

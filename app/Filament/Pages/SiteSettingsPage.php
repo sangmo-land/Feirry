@@ -57,6 +57,7 @@ class SiteSettingsPage extends Page
         'social.facebook',
         'social.linkedin',
         'social.instagram',
+        'social.tiktok',
         'social.youtube',
     ];
 
@@ -178,6 +179,11 @@ class SiteSettingsPage extends Page
                             ->url()
                             ->maxLength(300)
                             ->placeholder('https://instagram.com/feirry'),
+                        TextInput::make('social__tiktok')
+                            ->label('TikTok')
+                            ->url()
+                            ->maxLength(300)
+                            ->placeholder('https://tiktok.com/@feirry'),
                         TextInput::make('social__youtube')
                             ->label('YouTube')
                             ->url()

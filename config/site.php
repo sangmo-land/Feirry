@@ -53,6 +53,7 @@ return [
         'facebook' => 'https://facebook.com/feirry',
         'linkedin' => 'https://linkedin.com/company/feirry',
         'instagram' => 'https://instagram.com/feirry',
+        'tiktok' => 'https://tiktok.com/@feirry',
         'youtube' => 'https://youtube.com/@feirry',
     ],
 

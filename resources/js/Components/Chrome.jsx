@@ -354,6 +354,30 @@ const SOCIAL_LABELS = {
     youtube: 'YouTube',
 };
 
+/*
+ * Each network in its own colour.
+ *
+ * These are the one set of values on the site that are not ours to choose:
+ * they belong to the platforms, and the colour is most of what makes a mark
+ * recognisable at eleven pixels. So they sit here as raw hexadecimals rather
+ * than in the token sheet, which describes FEIRRY and should not be made to
+ * carry Meta's blue.
+ *
+ * Instagram has no flat colour — the gradient is the identity — so it gets the
+ * corner-to-corner wash the brand actually uses. TikTok is black on white or
+ * white on black and nothing else; it takes the site's own near-black, which
+ * is the one place a token and a brand colour happen to agree.
+ */
+const SOCIAL_SKIN = {
+    whatsapp: 'bg-jade-bright',
+    facebook: 'bg-[#1877F2]',
+    linkedin: 'bg-[#0A66C2]',
+    instagram:
+        'bg-[radial-gradient(circle_at_30%_107%,#FDF497_0%,#FD5949_45%,#D6249F_60%,#285AEB_90%)]',
+    tiktok: 'bg-ink-950',
+    youtube: 'bg-[#FF0000]',
+};
+
 const RAIL_ITEM = {
     hidden: { opacity: 0, y: 16, scale: 0.6 },
     visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.5, ease: EASE.outExpo } },
@@ -460,16 +484,19 @@ export function FloatingActions() {
                                             rel="noreferrer"
                                             aria-label={SOCIAL_LABELS[key]}
                                             className={cn(
-                                                'flex size-11 items-center justify-center rounded-full shadow-[var(--shadow-panel)] backdrop-blur',
-                                                'transition-[background-color,color,transform] duration-400 [transition-timing-function:var(--ease-out-expo)] hover:scale-110',
-                                                // WhatsApp keeps its own green.
-                                                // It is read as a channel rather
-                                                // than as a page to follow, and
-                                                // the colour is half of why it is
-                                                // recognised at this size.
-                                                key === 'whatsapp'
-                                                    ? 'bg-jade-bright text-white'
-                                                    : 'border border-ink-900/10 bg-concrete-50/95 text-ink-900 hover:bg-brand hover:text-ink-950',
+                                                'flex size-11 items-center justify-center rounded-full text-white shadow-[var(--shadow-panel)]',
+                                                // Brightness rather than a colour
+                                                // change on hover: the point of
+                                                // the circle is the colour, so
+                                                // there is nothing to swap it for.
+                                                'transition-[filter,transform] duration-400 [transition-timing-function:var(--ease-out-expo)] hover:scale-110 hover:brightness-110',
+                                                // The rail crosses light sections
+                                                // and the near-black footer alike.
+                                                // A pale hairline is what keeps
+                                                // TikTok's black circle from
+                                                // dissolving into the latter.
+                                                'ring-1 ring-white/25',
+                                                SOCIAL_SKIN[key],
                                             )}
                                         >
                                             <Icon name={key} className="size-5" />

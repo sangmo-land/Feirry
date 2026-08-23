@@ -23,7 +23,7 @@
     "name": "scroll"
   },
   "resources/css/app.css": {
-    "file": "assets/app-YC0PZ3V4.css",
+    "file": "assets/app-DmkrZTp-.css",
     "name": "app",
     "names": [
       "app.css"
@@ -32,7 +32,7 @@
     "isEntry": true
   },
   "resources/js/app.jsx": {
-    "file": "assets/app-D6fT0zzy.js",
+    "file": "assets/app-Bzn-cc50.js",
     "name": "app",
     "src": "resources/js/app.jsx",
     "isEntry": true,
@@ -43,7 +43,7 @@
       "_scroll-BxvexZXi.js"
     ],
     "css": [
-      "assets/app-YC0PZ3V4.css"
+      "assets/app-DmkrZTp-.css"
     ]
   }
 }

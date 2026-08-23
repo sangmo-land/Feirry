@@ -1,0 +1,49 @@
+{
+  "_motion-BIV-clJw.js": {
+    "file": "assets/motion-BIV-clJw.js",
+    "name": "motion",
+    "imports": [
+      "_rolldown-runtime-hePW80VL.js"
+    ]
+  },
+  "_react-DhWLjSIC.js": {
+    "file": "assets/react-DhWLjSIC.js",
+    "name": "react",
+    "imports": [
+      "_rolldown-runtime-hePW80VL.js",
+      "_motion-BIV-clJw.js"
+    ]
+  },
+  "_rolldown-runtime-hePW80VL.js": {
+    "file": "assets/rolldown-runtime-hePW80VL.js",
+    "name": "rolldown-runtime"
+  },
+  "_scroll-BxvexZXi.js": {
+    "file": "assets/scroll-BxvexZXi.js",
+    "name": "scroll"
+  },
+  "resources/css/app.css": {
+    "file": "assets/app-YC0PZ3V4.css",
+    "name": "app",
+    "names": [
+      "app.css"
+    ],
+    "src": "resources/css/app.css",
+    "isEntry": true
+  },
+  "resources/js/app.jsx": {
+    "file": "assets/app-BBDlkhyS.js",
+    "name": "app",
+    "src": "resources/js/app.jsx",
+    "isEntry": true,
+    "imports": [
+      "_rolldown-runtime-hePW80VL.js",
+      "_motion-BIV-clJw.js",
+      "_react-DhWLjSIC.js",
+      "_scroll-BxvexZXi.js"
+    ],
+    "css": [
+      "assets/app-YC0PZ3V4.css"
+    ]
+  }
+}

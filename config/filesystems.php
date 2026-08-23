@@ -40,7 +40,12 @@ return [
 
         'public' => [
             'driver' => 'local',
-            'root' => storage_path('app/public'),
+            // The document root itself, not storage/app/public behind a symlink.
+            // storage:link needs a symlink the shared host may not grant, and a
+            // link that silently fails leaves every upload written somewhere the
+            // web server never serves. Writing straight into public/storage drops
+            // that step, so an uploaded picture is reachable the moment it lands.
+            'root' => public_path('storage'),
             // Root-relative on purpose. Pinning this to APP_URL made every
             // picture cross-origin the moment the site was reached on any other
             // host — 127.0.0.1 instead of localhost, a staging domain, a LAN
@@ -81,8 +86,10 @@ return [
     |
     */
 
+    // Deliberately empty. The public disk already writes into public/storage, so
+    // there is nothing to link — `php artisan storage:link` stays a harmless
+    // no-op and can remain in the deploy script.
     'links' => [
-        public_path('storage') => storage_path('app/public'),
     ],
 
 ];

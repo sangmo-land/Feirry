@@ -131,8 +131,8 @@ class ProjectForm
 
                 Section::make('Visuels')
                     ->schema([
-                        FormFields::image(),
-                        FormFields::gallery('gallery', 'Galerie du chantier'),
+                        FormFields::image('cover_image', 'Image de couverture', 'projects/covers'),
+                        FormFields::gallery('gallery', 'Galerie du chantier', 'projects/gallery'),
                     ])
                     ->columns(1),
 

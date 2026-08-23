@@ -142,16 +142,18 @@ Deux façons de changer une image :
 
 1. **Remplacer le fichier** au même chemin, sous le même nom. Rien d'autre à
    faire : la base pointe déjà dessus, et les composants aussi.
-2. **Passer par le back-office**, qui écrit dans `uploads/` et repointe la base
-   toute seule. `App\Support\Media` accepte les deux formes — chemin relatif sur
-   le disque `public` ou URL absolue.
+2. **Passer par le back-office**, qui écrit dans le dossier de la rubrique
+   (`projects/covers/`, `projects/gallery/`…) et repointe la base toute seule.
+   `App\Support\Media` accepte les deux formes — chemin relatif sur le disque
+   `public` ou URL absolue.
 
 Chaque emplacement a sa propre copie du fichier, même là où deux pages
 partaient de la même photographie : remplacer le bandeau de la page Équipe ne
 touche pas celui des Carrières.
 
-Après un clone, `php artisan storage:link` recrée le lien — il n'est pas
-versionné, contrairement aux images elles-mêmes.
+Les images vivent directement dans `public/storage/`, versionnées avec le code :
+le disque `public` y écrit sans passer par un lien symbolique. Rien à recréer
+après un clone, et `php artisan storage:link` n'a plus rien à faire.
 
 ---
 

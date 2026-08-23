@@ -107,19 +107,19 @@ class FormFields
             ->columnSpanFull();
     }
 
-    public static function image(string $field = 'cover_image', string $label = 'Image de couverture'): FileUpload
+    public static function image(string $field = 'cover_image', string $label = 'Image de couverture', string $directory = 'uploads'): FileUpload
     {
         return FileUpload::make($field)
             ->label($label)
             ->image()
             ->imageEditor()
             ->disk('public')
-            ->directory('uploads')
+            ->directory($directory)
             ->maxSize(6144)
             ->helperText('JPG ou WebP, 6 Mo maximum. Format paysage recommandé.');
     }
 
-    public static function gallery(string $field = 'gallery', string $label = 'Galerie'): FileUpload
+    public static function gallery(string $field = 'gallery', string $label = 'Galerie', string $directory = 'uploads/gallery'): FileUpload
     {
         return FileUpload::make($field)
             ->label($label)
@@ -128,7 +128,7 @@ class FormFields
             ->reorderable()
             ->appendFiles()
             ->disk('public')
-            ->directory('uploads/gallery')
+            ->directory($directory)
             ->maxSize(6144)
             ->columnSpanFull();
     }

@@ -9,9 +9,9 @@ use Illuminate\Support\Facades\Storage;
  *
  * Two kinds of value live in these columns. The seeded content holds absolute
  * URLs to stock photography; anything the client uploads through the admin is
- * a path on the `public` disk — `uploads/xyz.jpg` — which is only reachable
- * through the storage symlink. Handing that raw path to an <img> resolves it
- * against the current page instead, so an uploaded picture silently 404s.
+ * a path on the `public` disk — `projects/covers/xyz.jpg` — which is served from
+ * public/storage. Handing that raw path to an <img> resolves it against the
+ * current page instead, so an uploaded picture silently 404s.
  */
 class Media
 {

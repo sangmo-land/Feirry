@@ -22,7 +22,7 @@
 # Linux, a junction on Windows. Every checkout makes its own. The pictures it
 # points at live in storage/app/public and ARE tracked — they are site content,
 # not build output.
-/public/storage
+
 
 /storage/*.key
 /storage/pail

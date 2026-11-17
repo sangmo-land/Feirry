@@ -36,6 +36,8 @@ class SitemapController extends Controller
             ['projets', '0.9', 'weekly'],
             ['offres', '0.9', 'monthly'],
             ['cdp', '0.8', 'weekly'],
+            ['cdp.consultation', '0.6', 'weekly'],
+            ['cdp.visit', '0.6', 'weekly'],
             ['conseils', '0.7', 'weekly'],
             ['projet', '0.9', 'monthly'],
             ['legal.notice', '0.3', 'yearly'],

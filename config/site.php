@@ -69,6 +69,9 @@ return [
     | Initial values proposed by the specification; adjust to the hosting
     | (PHP upload_max_filesize / post_max_size must allow them).
     */
+    /* Two-factor sign-in for every admin account (CDC Coup de Pouce §22). */
+    'admin_mfa_required' => (bool) env('ADMIN_MFA_REQUIRED', false),
+
     'cdp' => [
         'pdf_max_files' => (int) env('CDP_PDF_MAX_FILES', 3),
         'pdf_max_kb' => (int) env('CDP_PDF_MAX_KB', 15360),

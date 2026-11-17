@@ -31,6 +31,11 @@ class LeadFileController extends Controller
             default => abort(404),
         };
 
+        if ($lead instanceof QuoteRequest) {
+            // Project requests hold private plans: never for the communication or referent roles.
+            abort_unless($user->hasRole('admin', 'administration'), 403);
+        }
+
         if ($lead instanceof AssistanceRequest) {
             // Role checked on every download (CDC Coup de Pouce §22).
             abort_unless(method_exists($user, 'canSeeAssistanceRequest') && $user->canSeeAssistanceRequest($lead), 403);

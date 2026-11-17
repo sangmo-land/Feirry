@@ -13,6 +13,12 @@ use Illuminate\Database\Eloquent\Builder;
 
 class LatestQuoteRequests extends TableWidget
 {
+    /** Contact details of applicants: administration only. */
+    public static function canView(): bool
+    {
+        return (bool) auth()->user()?->hasRole('admin', 'administration');
+    }
+
     protected static ?int $sort = 2;
 
     protected int|string|array $columnSpan = 'full';

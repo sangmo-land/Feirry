@@ -31,7 +31,7 @@ git rm -q app/Http/Controllers/Site/{Contact,Home,Page,Project,Quote,Service}Con
   resources/js/Pages/{Blog,Projects,Services}/{Index,Show}.jsx \
   tests/Feature/{FormSubmissionTest,PageHeroTest,PublicSiteTest}.php \
   public/build/assets/{app-B5Pq6R0f.css,app-CT4qmrEy.js,motion-BIV-clJw.js,react-DhWLjSIC.js,rolldown-runtime-hePW80VL.js,scroll-BxvexZXi.js}
-git rm -q --ignore-unmatch public/build/assets/{Article-03nCvgb_.js,Conseils-CY6me3EI.js,CoupDePouce-Dj8LnzRr.js,Expertise-DdRYfgmo.js,Expertises-LfZrlVtO.js,Feirry-DxYYzfID.js,Home-BaX32GJH.js,Index-CUKa87Yz.js,Legal-BTvcMTt2.js,MonProjet-BhxTsXTC.js,Offres-Do-0qlmT.js,Projet-BGTY2wrG.js,Projets-BxT5w-so.js,Shared-BQW6BLAT.js,Show-DmQI7116.js,app-DI8MZOSk.js,sections-B-Q_KFL3.js}
+git rm -q --ignore-unmatch public/build/assets/{Article-03nCvgb_.js,Conseils-CY6me3EI.js,CoupDePouce-Dj8LnzRr.js,Expertise-DdRYfgmo.js,Expertises-LfZrlVtO.js,Feirry-DxYYzfID.js,Home-BaX32GJH.js,Index-CUKa87Yz.js,Legal-BTvcMTt2.js,MonProjet-BhxTsXTC.js,Offres-Do-0qlmT.js,Projet-BGTY2wrG.js,Projets-BxT5w-so.js,Shared-BQW6BLAT.js,Show-DmQI7116.js,app-DI8MZOSk.js,sections-B-Q_KFL3.js,CoupDePouce-DjIeq-w4.js,CoupDePouceConfirmation-XAQm_Ha5.js,Legal-DsEgTBXW.js,cdp-8xhSvNHe.js}
 git commit -m "Nettoyage des fichiers remplacés par la V7"
 ```
 (La 2e commande retire les anciens fichiers compilés remplacés par la version Coup de Pouce.)
@@ -59,6 +59,10 @@ supprimé** : il reste visible dans l’admin.
   `upload_max_filesize = 16M`, `post_max_size = 64M`, `max_file_uploads = 10`.
 - Rôles admin (Réglages → Équipe et rôles) : Administrateur technique, Administration FEIRRY, Référent technique
   (ne voit que les demandes qui lui sont affectées), Communication (aucun accès aux demandes ni aux plans).
+- Double authentification de l’admin (application Google/Microsoft Authenticator), migration
+  `2026_11_17_000001_add_admin_two_factor`. Chaque membre l’active dans « Profil ». Une fois que tous l’ont configurée,
+  mettre `ADMIN_MFA_REQUIRED=true` dans le `.env` pour la rendre obligatoire (CDC §22).
+- Les rôles Communication et Référent n’ont plus accès aux demandes « Mon projet », messages, candidatures ni abonnés.
 - Correctif important : le modèle `User` déclare maintenant l’accès au panneau Filament. Sans cela, Filament refuse
   tous les comptes dès que `APP_ENV` n’est pas `local`.
 
@@ -70,6 +74,7 @@ supprimé** : il reste visible dans l’admin.
 | `MAIL_MAILER`, `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD`, `MAIL_FROM_ADDRESS` | Service d’envoi d’e-mails. |
 | `ADMIN_EMAIL`, `ADMIN_PASSWORD` | Utilisés uniquement par le seeder en local. |
 | `CDP_PDF_MAX_FILES`, `CDP_PDF_MAX_KB`, `CDP_PHOTO_MAX_FILES`, `CDP_PHOTO_MAX_KB` | Facultatif : limites des pièces Coup de Pouce (défaut 3 × 15360 Ko, 5 × 8192 Ko). |
+| `ADMIN_MFA_REQUIRED` | `true` pour imposer la double authentification à tous les comptes admin (défaut `false`). |
 | `GOOGLE_SITE_VERIFICATION`, `BING_SITE_VERIFICATION` | Facultatif. |
 
 ## 4. Contrôles à chaud

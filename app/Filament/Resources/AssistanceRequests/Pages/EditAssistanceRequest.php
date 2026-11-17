@@ -57,9 +57,12 @@ class EditAssistanceRequest extends EditRecord
                 continue;
             }
             $reports = $this->getRecord()->reports ?? [];
+            $original = is_array($name) ? ($name[$path] ?? basename($path)) : ($name ?: basename($path));
             $reports[] = [
                 'path' => $path,
-                'name' => is_array($name) ? ($name[$path] ?? basename($path)) : ($name ?: basename($path)),
+                // Download name per CDC §11; never the client's name. The original name stays private metadata.
+                'name' => sprintf('%s_Rapport_Preliminaire_v%02d.pdf', $this->getRecord()->reference, count($reports) + 1),
+                'original_name' => $original,
                 'size' => Storage::disk('local')->size($path),
                 'added_at' => now()->toIso8601String(),
                 'by' => auth()->id(),

@@ -19,6 +19,12 @@ class NewsletterSubscriberResource extends Resource
 {
     protected static ?string $model = NewsletterSubscriber::class;
 
+    /** Personal data and private documents: administration only (CDC Coup de Pouce §10). */
+    public static function canAccess(): bool
+    {
+        return (bool) auth()->user()?->hasRole('admin', 'administration');
+    }
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedEnvelopeOpen;
 
     protected static string|UnitEnum|null $navigationGroup = 'Actualités';

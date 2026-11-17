@@ -89,6 +89,38 @@ class CoupDePouceTest extends TestCase
         $this->post('/coup-de-pouce/demandes', $this->formA())->assertRedirect('/coup-de-pouce/confirmation');
     }
 
+    /* CAM-03b — a request sent on the waiting list is stored as « En attente » and told so */
+    public function test_waitlist_request_is_marked_waiting(): void
+    {
+        $this->open(['status' => 'paused', 'waitlist' => true]);
+        $this->post('/coup-de-pouce/demandes', $this->formA())->assertRedirect('/coup-de-pouce/confirmation');
+        $this->assertSame('waiting', AssistanceRequest::firstOrFail()->status);
+        $this->get('/coup-de-pouce/confirmation')->assertOk()->assertSee('waiting', false);
+    }
+
+    /* SEO — form pages are listed, the confirmation is not */
+    public function test_sitemap_lists_forms_but_not_confirmation(): void
+    {
+        $xml = $this->get('/sitemap.xml')->getContent();
+        $this->assertStringContainsString('/coup-de-pouce/consultation', $xml);
+        $this->assertStringContainsString('/coup-de-pouce/visite', $xml);
+        $this->assertStringNotContainsString('/coup-de-pouce/confirmation', $xml);
+    }
+
+    /* COM — communication and referents never reach project-request plans or contacts */
+    public function test_other_inbound_requests_are_administration_only(): void
+    {
+        $this->post('/mon-projet', ['need' => 'construction', 'location' => 'Douala', 'name' => 'Client Test', 'phone' => '+237 670 000 000', 'contact_preference' => 'telephone', 'privacy' => '1', 'attachments' => [UploadedFile::fake()->create('plan.pdf', 20, 'application/pdf')]]);
+        $q = \App\Models\QuoteRequest::firstOrFail();
+        foreach (['communication', 'referent'] as $role) {
+            $u = User::factory()->create(['role' => $role]);
+            $this->actingAs($u)->get("/admin/fichiers/quote/{$q->id}/0")->assertForbidden();
+            $this->actingAs($u)->get('/admin/quote-requests')->assertForbidden();
+            $this->actingAs($u)->get('/admin')->assertOk();
+        }
+        $this->actingAs(User::factory()->create(['role' => 'administration']))->get("/admin/fichiers/quote/{$q->id}/0")->assertOk();
+    }
+
     /* CAM-04 — an announced future opening shows « ouverture prochaine » */
     public function test_upcoming_edition(): void
     {
@@ -229,6 +261,10 @@ class CoupDePouceTest extends TestCase
         $this->actingAs($admin)->get("/admin/assistance-requests/{$r->id}/edit")->assertOk();
         $this->actingAs($admin)->get('/admin/assistance-requests/create')->assertOk();
         $this->actingAs($admin)->get('/admin/campaigns')->assertOk();
+        $this->actingAs($admin)->get('/admin/assistance-requests?tab=planning')->assertOk();
+        $this->actingAs($admin)->get('/admin')->assertOk();
+        \Livewire\Livewire::actingAs($admin)->test(\App\Filament\Widgets\CdpOverview::class)->assertSee('Coup de Pouce — reçues')->assertSee('Programmées');
+        \Livewire\Livewire::actingAs($admin)->test(\App\Filament\Resources\AssistanceRequests\Pages\ListAssistanceRequests::class, ['activeTab' => 'planning'])->assertOk();
         $this->actingAs($admin)->get('/admin/users')->assertOk();
         $this->actingAs($admin)->get('/admin/campaigns/'.Campaign::first()->id.'/edit')->assertOk();
 

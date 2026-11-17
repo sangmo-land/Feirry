@@ -162,8 +162,12 @@ textarea.f-input { height: auto; min-height: 104px; padding: 14px 16px; resize: 
 .f-nav a { color: var(--v-text); padding: 8px 0; position: relative; }
 .f-nav a:hover { color: #fe5000; }
 .f-nav a[aria-current='page']::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 2px; border-radius: 2px; background: #fe5000; }
-.f-crumbs { display: flex; flex-wrap: wrap; gap: 8px; font-size: 14px; color: var(--v-muted); margin-bottom: 18px; }
-.v7 .f-crumbs a { color: var(--v-muted); }
+.f-crumbs { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 14px; color: var(--v-muted); margin-bottom: 18px; }
+.v7 .f-crumbs a { color: var(--v-muted); display: inline-block; padding: 4px 0; }
+/* One line only: a breadcrumb that wraps then unwraps when the font loads shifts the page (CLS). */
+.f-crumbs { flex-wrap: nowrap; white-space: nowrap; min-width: 0; }
+.f-crumbs > * { flex: none; }
+.f-crumbs > :last-child { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 .v7 .f-crumbs a:hover { color: #fe5000; }
 
 .f-pagehead { padding-top: 72px; padding-bottom: 8px; }

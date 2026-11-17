@@ -31,6 +31,13 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->login()
             ->profile()
+            ->defaultAvatarProvider(\App\Filament\Support\InitialsAvatar::class)
+            // Authenticator app (Google Authenticator, Microsoft Authenticator…). Optional per account until
+            // ADMIN_MFA_REQUIRED=true, which forces every account to set it up at next sign-in.
+            ->multiFactorAuthentication(
+                [\Filament\Auth\MultiFactor\App\AppAuthentication::make()->recoverable()->brandName('FEIRRY Admin')],
+                isRequired: (bool) config('site.admin_mfa_required'),
+            )
             ->brandName(config('site.brand.name').' — Administration')
             ->favicon(asset('favicon.svg'))
             ->colors([

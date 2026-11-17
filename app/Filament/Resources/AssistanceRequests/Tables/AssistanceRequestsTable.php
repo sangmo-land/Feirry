@@ -27,13 +27,12 @@ class AssistanceRequestsTable
                     ->formatStateUsing(fn ($state) => $state === 'visit' ? 'B · Visite' : 'A · Consultation')
                     ->color(fn ($state) => $state === 'visit' ? 'warning' : 'info'),
                 TextColumn::make('city')->label('Quartier')->searchable()->limit(28),
-                TextColumn::make('name')->label('Demandeur')->searchable()->toggleable(),
+                TextColumn::make('name')->label('Demandeur')->searchable()->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('status')->label('Statut')->badge()
                     ->formatStateUsing(fn ($state) => AssistanceRequest::STATUSES[$state] ?? $state)
                     ->color(fn ($state) => match ($state) {
                         'received', 'incomplete' => 'danger', 'studying', 'waiting' => 'warning', 'scheduled' => 'info', 'done', 'report_sent', 'closed' => 'success', default => 'gray',
                     }),
-                TextColumn::make('assignee.name')->label('Responsable')->placeholder('—'),
                 TextColumn::make('alert')->label('Alerte')->badge()->color('danger')
                     ->state(fn (AssistanceRequest $r) => collect([
                         $r->danger_reported ? 'Danger signalé' : null,
@@ -41,6 +40,9 @@ class AssistanceRequestsTable
                         $r->reportOverdue() ? 'Rapport en retard' : null,
                     ])->filter()->values()->all() ?: null)
                     ->placeholder('—'),
+                TextColumn::make('assignee.name')->label('Responsable')->placeholder('—'),
+                TextColumn::make('scheduled_at')->label('Programmée le')->dateTime('d/m/Y H:i')->placeholder('—')->sortable()->toggleable(),
+                TextColumn::make('report_due_at')->label('Rapport attendu')->date('d/m/Y')->placeholder('—')->sortable()->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('source')->label('Origine')->formatStateUsing(fn ($s) => $s === 'office' ? 'Bureau' : 'Site')->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([

@@ -112,7 +112,8 @@ class CoupDePouceController extends Controller
             'notice_version' => config('site.cdp.notice_version'),
             'marketing_consent' => ! empty($data['marketing']),
             'marketing_consent_at' => ! empty($data['marketing']) ? now() : null,
-            'status' => 'received',
+            // Requests sent while the edition is full go straight to the waiting list (CDC §05, §09).
+            'status' => $campaign->publicState() === 'waitlist' ? 'waiting' : 'received',
         ]);
 
         $lead->update(['attachments' => $this->storeFiles($request->file('attachments', []), $lead)]);
@@ -145,6 +146,7 @@ class CoupDePouceController extends Controller
             'reference' => $done['reference'],
             'path' => $done['path'],
             'message' => static::publicCampaign()['confirmation'] ?? null,
+            'waiting' => (bool) ($done['waiting'] ?? false),
         ]);
     }
 
@@ -152,7 +154,7 @@ class CoupDePouceController extends Controller
 
     protected function confirm(AssistanceRequest $lead): RedirectResponse
     {
-        session()->flash('cdp_done', ['reference' => $lead->reference, 'path' => $lead->path]);
+        session()->flash('cdp_done', ['reference' => $lead->reference, 'path' => $lead->path, 'waiting' => $lead->status === 'waiting']);
 
         return redirect(\App\Support\LocalePath::to('/coup-de-pouce/confirmation', app()->getLocale()));
     }

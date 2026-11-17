@@ -120,7 +120,7 @@ export function Input({ id, value, onChange, error, hint, type = 'text', autoCom
 
 export function Choices({ label, options, value, onPick, round = false, cols = 2, error }) {
     return (
-        <fieldset style={{ border: 0, margin: 0, padding: 0 }}>
+        <fieldset style={{ border: 0, margin: 0, padding: 0 }} data-invalid={error ? 'true' : undefined}>
             <legend style={{ fontSize: 14, fontWeight: 700, marginBottom: 10, padding: 0 }}>{label}</legend>
             <div className={round ? 'chips' : `g${cols}`} style={{ gap: round ? 8 : 10 }}>
                 {options.map(([v, title, sub]) => (

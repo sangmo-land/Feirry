@@ -39,6 +39,8 @@ class AssistanceRequestResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'reference';
 
+    protected static ?string $breadcrumb = 'Coup de Pouce';
+
     public static function canAccess(): bool
     {
         return (bool) auth()->user()?->canSeeAssistanceRequests();

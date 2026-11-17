@@ -19,6 +19,12 @@ class QuoteRequestResource extends Resource
 {
     protected static ?string $model = QuoteRequest::class;
 
+    /** Personal data and private documents: administration only (CDC Coup de Pouce §10). */
+    public static function canAccess(): bool
+    {
+        return (bool) auth()->user()?->hasRole('admin', 'administration');
+    }
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedDocumentText;
 
     protected static string|UnitEnum|null $navigationGroup = 'Demandes entrantes';

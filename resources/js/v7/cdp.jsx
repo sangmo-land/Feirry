@@ -84,7 +84,7 @@ export function CdpHomeBlock({ campaign }) {
                         <p style={{ margin: '14px 0 0', fontFamily: "'Clash Display', sans-serif", fontSize: 24, fontWeight: 600, lineHeight: 1.25 }}>{C.promise}</p>
                         <p className="f-lead" style={{ marginTop: 14, maxWidth: 520 }}>{C.homeLead}</p>
                         <StateText campaign={campaign} style={{ marginTop: 14, fontSize: 15 }} />
-                        <A className="f-btn f-btn-primary f-btn-inline" href="/coup-de-pouce" style={{ marginTop: 24 }} onClick={() => track('cdp_view')}>
+                        <A className="f-btn f-btn-primary f-btn-inline" href="/coup-de-pouce" style={{ marginTop: 24 }}>
                             {C.discover}
                             <Icon name="arrow" size={18} stroke={2.2} />
                         </A>
@@ -269,6 +269,7 @@ export function CdpForm({ path, campaign, limits }) {
     const [errors, setErrors] = useState({});
     const [banner, setBanner] = useState('');
     const [sending, setSending] = useState(false);
+    const [progress, setProgress] = useState(null);
     const started = useRef(false);
 
     // Keep the answers for the session only — never the documents (CDC §05).
@@ -309,6 +310,12 @@ export function CdpForm({ path, campaign, limits }) {
     };
 
     const focusTop = () => window.setTimeout(() => top.current?.focus(), 30);
+    // After a failed check, move focus to the first field to fix (CDC §14).
+    const focusError = () =>
+        window.setTimeout(() => {
+            const el = top.current?.closest('form')?.querySelector('[aria-invalid="true"], fieldset[data-invalid] button');
+            (el ?? top.current)?.focus();
+        }, 30);
 
     const outOfZone = visit && form.city.trim().length > 2 && !/douala/i.test(`${form.city} ${form.site_location}`);
 
@@ -341,6 +348,7 @@ export function CdpForm({ path, campaign, limits }) {
         setBanner('');
         if (!validate1()) {
             setBanner(F.errCheck);
+            focusError();
             return;
         }
         setStep(2);
@@ -351,6 +359,7 @@ export function CdpForm({ path, campaign, limits }) {
         setBanner('');
         if (!validate2()) {
             setBanner(F.errCheck);
+            focusError();
             return;
         }
         if (sending) return;
@@ -372,6 +381,7 @@ export function CdpForm({ path, campaign, limits }) {
             forceFormData: true,
             preserveScroll: true,
             preserveState: true,
+            onProgress: (e) => files.length && e?.percentage != null && setProgress(e.percentage),
             onSuccess: (page) => {
                 if (page.props.flash?.error === 'campaign_closed') {
                     setBanner(F.errClosed);
@@ -392,7 +402,7 @@ export function CdpForm({ path, campaign, limits }) {
                 setErrors(mapped);
                 setBanner(F.errCheck);
                 if (Object.keys(mapped).some((k) => STEP1.includes(k))) setStep(1);
-                focusTop();
+                focusError();
             },
             onNetworkError: () => {
                 track('cdp_submit_error');
@@ -404,7 +414,10 @@ export function CdpForm({ path, campaign, limits }) {
                 setBanner(r?.status === 429 ? F.errThrottle : F.errServer);
                 return false;
             },
-            onFinish: () => setSending(false),
+            onFinish: () => {
+                setSending(false);
+                setProgress(null);
+            },
         });
     };
 
@@ -443,6 +456,9 @@ export function CdpForm({ path, campaign, limits }) {
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                     <h2 id="cdp-step-title" style={{ margin: 0, fontSize: 24 }}>{names[step - 1]}</h2>
+                    {campaign.state === 'waitlist' && step === 1 && (
+                        <p role="note" style={{ margin: 0, padding: '12px 14px', borderRadius: 14, border: '1px solid var(--v-line-strong)', lineHeight: 1.55 }}>{F.waitlistNote}</p>
+                    )}
                     <Banner text={banner} />
 
                     {step === 1 && (
@@ -565,6 +581,14 @@ export function CdpForm({ path, campaign, limits }) {
                             {sending ? F.sending : step === 1 ? F.next : F.send}
                         </button>
                     </div>
+                    {progress != null && (
+                        <div role="status" aria-live="polite" style={{ fontSize: 14 }}>
+                            {F.uploading} : {progress} %
+                            <div aria-hidden="true" style={{ height: 4, marginTop: 6, borderRadius: 4, background: 'var(--v-line-strong)' }}>
+                                <div style={{ width: `${progress}%`, height: 4, borderRadius: 4, background: '#FE5000', transition: 'width .2s' }} />
+                            </div>
+                        </div>
+                    )}
                     <p className="f-muted" style={{ margin: 0, fontSize: 13, textAlign: 'center' }}>{F.reassure}</p>
                     <input type="text" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" style={{ position: 'absolute', left: -9999, width: 1, height: 1 }} />
                 </div>
@@ -577,7 +601,7 @@ export function CdpForm({ path, campaign, limits }) {
 /* Confirmation — only after the server stored the request (CDC §09)   */
 /* ------------------------------------------------------------------ */
 
-export function CdpConfirmation({ reference, message }) {
+export function CdpConfirmation({ reference, message, waiting = false }) {
     const { C } = useCdp();
     const [copied, setCopied] = useState(false);
     const box = useRef(null);
@@ -600,6 +624,7 @@ export function CdpConfirmation({ reference, message }) {
             <p style={{ margin: '18px 0 0', fontSize: 18 }}>
                 {C.confirm.ref}{' '}: <strong className="f-accent" style={{ fontFamily: "'Clash Display', sans-serif", letterSpacing: '.04em' }}>{reference}</strong>
             </p>
+            {waiting && <p style={{ margin: '14px 0 0', lineHeight: 1.65, fontWeight: 700 }}>{C.confirm.waiting}</p>}
             <p className="f-muted" style={{ margin: '14px 0 0', lineHeight: 1.65 }}>{message || C.confirm.text}</p>
             <p className="f-muted" style={{ margin: '10px 0 0', fontSize: 14 }}>{C.confirm.keep}</p>
             <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 26 }}>

@@ -21,6 +21,22 @@ composer deploy        # migrate --force + caches
 Les fichiers compilés (`public/build`) et les images V7 (`public/storage/v7`) sont dans le dépôt :
 aucun `npm` n’est nécessaire sur le serveur.
 
+### Nettoyage des fichiers remplacés (à faire une fois, après la fusion)
+
+```bash
+git rm -q app/Http/Controllers/Site/{Contact,Home,Page,Project,Quote,Service}Controller.php \
+  app/Http/Requests/{StoreContactRequest,StoreQuoteRequest}.php \
+  resources/js/Layouts/SiteLayout.jsx \
+  resources/js/Pages/{About,Contact,Faq,Home,Legal,Process,Quote,Team}.jsx \
+  resources/js/Pages/{Blog,Projects,Services}/{Index,Show}.jsx \
+  tests/Feature/{FormSubmissionTest,PageHeroTest,PublicSiteTest}.php \
+  public/build/assets/{app-B5Pq6R0f.css,app-CT4qmrEy.js,motion-BIV-clJw.js,react-DhWLjSIC.js,rolldown-runtime-hePW80VL.js,scroll-BxvexZXi.js}
+git commit -m "Nettoyage des fichiers remplacés par la V7"
+```
+
+Ces fichiers ne sont plus utilisés par le site ; sans ce nettoyage, le site fonctionne mais les anciens tests échouent.
+Vérifier aussi que `public/storage` est un vrai dossier sur le serveur (pas un lien symbolique), et que `mod_headers` / `mod_deflate` sont actifs.
+
 La migration `install_v7_content` installe les 6 expertises, 5 projets, 3 offres et la session
 Coup de Pouce (fermée). Le contenu de démonstration de la première version est **dépublié, pas
 supprimé** : il reste visible dans l’admin.

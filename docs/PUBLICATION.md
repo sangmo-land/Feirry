@@ -31,10 +31,10 @@ git rm -q app/Http/Controllers/Site/{Contact,Home,Page,Project,Quote,Service}Con
   resources/js/Pages/{Blog,Projects,Services}/{Index,Show}.jsx \
   tests/Feature/{FormSubmissionTest,PageHeroTest,PublicSiteTest}.php \
   public/build/assets/{app-B5Pq6R0f.css,app-CT4qmrEy.js,motion-BIV-clJw.js,react-DhWLjSIC.js,rolldown-runtime-hePW80VL.js,scroll-BxvexZXi.js}
-git rm -q public/build/assets/{Article-03nCvgb_.js,Conseils-CY6me3EI.js,CoupDePouce-Dj8LnzRr.js,Expertise-DdRYfgmo.js,Expertises-LfZrlVtO.js,Feirry-DxYYzfID.js,Home-BaX32GJH.js,Index-CUKa87Yz.js,Legal-BTvcMTt2.js,MonProjet-BhxTsXTC.js,Offres-Do-0qlmT.js,Projet-BGTY2wrG.js,Projets-BxT5w-so.js,Shared-BQW6BLAT.js,Show-DmQI7116.js,app-DI8MZOSk.js,sections-B-Q_KFL3.js}
+git rm -q --ignore-unmatch public/build/assets/{Article-03nCvgb_.js,Conseils-CY6me3EI.js,CoupDePouce-Dj8LnzRr.js,Expertise-DdRYfgmo.js,Expertises-LfZrlVtO.js,Feirry-DxYYzfID.js,Home-BaX32GJH.js,Index-CUKa87Yz.js,Legal-BTvcMTt2.js,MonProjet-BhxTsXTC.js,Offres-Do-0qlmT.js,Projet-BGTY2wrG.js,Projets-BxT5w-so.js,Shared-BQW6BLAT.js,Show-DmQI7116.js,app-DI8MZOSk.js,sections-B-Q_KFL3.js}
 git commit -m "Nettoyage des fichiers remplacés par la V7"
 ```
-(La 2e commande retire les anciens fichiers compilés remplacés par la version Coup de Pouce ; ignorer ceux déjà absents.)
+(La 2e commande retire les anciens fichiers compilés remplacés par la version Coup de Pouce.)
 
 Ces fichiers ne sont plus utilisés par le site ; sans ce nettoyage, le site fonctionne mais les anciens tests échouent.
 Vérifier aussi que `public/storage` est un vrai dossier sur le serveur (pas un lien symbolique), et que `mod_headers` / `mod_deflate` sont actifs.

@@ -24,7 +24,23 @@ class Project extends Model
         'is_featured' => 'boolean',
         'is_published' => 'boolean',
         'budget_public' => 'boolean',
+        'families' => 'array',
+        'roles' => 'array',
+        'deliverables_fr' => 'array',
+        'deliverables_en' => 'array',
+        'visual_is_provisional' => 'boolean',
+        'photo_rights_confirmed' => 'boolean',
     ];
+
+    /** Filter families of the projects page (CDC §07). */
+    public const FAMILIES = ['architecture', 'construction', 'design', 'suivi'];
+
+    /** What FEIRRY actually did on the project. */
+    public const ROLES = ['design', 'build', 'follow', 'expert'];
+
+    public const STAGES = ['design', 'works', 'done', 'tbc'];
+
+    public const VISIBILITIES = ['draft', 'published', 'archived'];
 
     public function category(): BelongsTo
     {
@@ -38,7 +54,8 @@ class Project extends Model
 
     public function scopePublished(Builder $query): Builder
     {
-        return $query->where('is_published', true);
+        // Drafts and archived sheets are never public, nor indexed.
+        return $query->where('is_published', true)->where('visibility', 'published');
     }
 
     public function getRouteKeyName(): string
@@ -80,6 +97,15 @@ class Project extends Model
             'category' => $this->relationLoaded('category') && $this->category
                 ? $this->category->toArrayLocalised()
                 : null,
+            'families' => $this->families ?? [],
+            'roles' => $this->roles ?? [],
+            'stage' => $this->stage ?: 'tbc',
+            'stage_note' => $this->tr('stage_note'),
+            'programme' => $this->tr('programme'),
+            'mission' => $this->tr('mission'),
+            'period' => $this->period,
+            'cover_position' => $this->cover_position ?: 'center 50%',
+            'provisional' => $this->visual_is_provisional,
         ];
     }
 
@@ -97,6 +123,8 @@ class Project extends Model
             'completed_at' => $this->completed_at?->toDateString(),
             'meta_title' => $this->meta_title,
             'meta_description' => $this->meta_description,
+            'deliverables' => $this->tr('deliverables') ?? [],
+            'photo_credits' => $this->photo_credits,
         ]);
     }
 }

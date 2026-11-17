@@ -69,6 +69,7 @@ class Post extends Model
     {
         return array_merge($this->toCard(), [
             'body' => $this->tr('body'),
+            'updated_at' => $this->updated_at?->toIso8601String(),
             'meta_title' => $this->meta_title,
             'meta_description' => $this->meta_description,
         ]);

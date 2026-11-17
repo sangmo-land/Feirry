@@ -33,8 +33,9 @@ export default defineConfig({
                         new RegExp(`[\\\\/]node_modules[\\\\/](${names})[\\\\/]`).test(id);
 
                     if (vendor('react|react-dom|scheduler|@inertiajs')) return 'react';
-                    if (vendor('motion|motion-dom|motion-utils|framer-motion')) return 'motion';
-                    if (vendor('gsap|lenis')) return 'scroll';
+                    // motion / gsap / lenis are only used by the legacy careers
+                    // pages now: left to automatic splitting so the V7 pages
+                    // never download them.
 
                     return undefined;
                 },

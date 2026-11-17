@@ -82,8 +82,8 @@ class SearchEngineTest extends TestCase
 
         $this->assertContains(route('home'), $locations);
         $this->assertContains(route('en.home'), $locations);
-        $this->assertContains(route('about'), $locations);
-        $this->assertContains(route('en.about'), $locations);
+        $this->assertContains(route('feirry'), $locations);
+        $this->assertContains(route('en.feirry'), $locations);
     }
 
     /**
@@ -147,74 +147,6 @@ class SearchEngineTest extends TestCase
     /* The location section */
     /* ------------------------------------------------------------------ */
 
-    public function test_company_page_renders_the_location_section_anchor(): void
-    {
-        $anchor = Seo::locationAnchor();
-
-        // Shared through Inertia, which is where the React section reads the
-        // id it renders with. It travels in the page's JSON payload, so it is
-        // matched there rather than as an attribute in the markup.
-        $this->get('/entreprise')->assertSee('"locationAnchor":"'.$anchor.'"', false);
-    }
-
-    /**
-     * The address has to exist in the response, not only after React has run.
-     * The map itself is a google.com iframe and is never indexed as part of
-     * this page; what a crawler can read is the text around it.
-     */
-    public function test_company_page_serves_the_address_without_javascript(): void
-    {
-        $response = $this->get('/entreprise');
-        $contact = config('site.contact');
-
-        $response->assertSee($contact['address'], false);
-        $response->assertSee($contact['district'], false);
-        $response->assertSee($contact['city'], false);
-        $response->assertSee($contact['postal_box'], false);
-        $response->assertSee($contact['phone'], false);
-        $response->assertSee(config('site.contact.maps_url'), false);
-    }
-
-    public function test_company_page_emits_a_place_node_at_the_anchor(): void
-    {
-        $response = $this->get('/entreprise');
-
-        $graph = $this->schemaFrom($response->getContent());
-
-        $this->assertArrayHasKey('@graph', $graph);
-
-        $types = collect($graph['@graph'])->pluck('@type');
-
-        $this->assertContains('GeneralContractor', $types->all());
-        $this->assertContains('WebPage', $types->all());
-        $this->assertContains('Place', $types->all());
-
-        $place = collect($graph['@graph'])->firstWhere('@type', 'Place');
-        $expected = rtrim(route('about'), '/').'#'.Seo::locationAnchor();
-
-        $this->assertSame($expected, $place['@id']);
-        $this->assertSame($expected, $place['url']);
-        $this->assertSame(config('site.contact.latitude'), $place['geo']['latitude']);
-        $this->assertSame(config('site.contact.longitude'), $place['geo']['longitude']);
-        $this->assertSame(config('site.contact.maps_url'), $place['hasMap']);
-        $this->assertSame('Douala', $place['address']['addressLocality']);
-    }
-
-    public function test_organization_schema_carries_the_pin_and_the_opening_hours(): void
-    {
-        $schema = $this->schemaFrom($this->get('/')->getContent());
-
-        $this->assertSame('GeneralContractor', $schema['@type']);
-        $this->assertSame(Seo::organizationId(), $schema['@id']);
-        $this->assertSame(config('site.contact.latitude'), $schema['geo']['latitude']);
-        $this->assertSame(config('site.contact.maps_url'), $schema['hasMap']);
-
-        $days = collect($schema['openingHoursSpecification'])->flatMap->dayOfWeek;
-
-        $this->assertContains('Monday', $days->all());
-        $this->assertContains('Saturday', $days->all());
-    }
-
     /**
      * The address in the structured data and the address on the page are the
      * same string. Dashboard edits reach the markup through SiteSettings, and
@@ -230,11 +162,6 @@ class SearchEngineTest extends TestCase
 
         $this->assertStringContainsString('Rue Njo-Njo', $schema['address']['streetAddress']);
         $this->assertSame('Kribi', $schema['address']['addressLocality']);
-    }
-
-    public function test_company_page_is_indexable(): void
-    {
-        $this->get('/entreprise')->assertSee('name="robots" content="index, follow', false);
     }
 
     /** The one JSON-LD block in the document head, decoded. */

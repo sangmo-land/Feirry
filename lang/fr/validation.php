@@ -1,0 +1,35 @@
+<?php
+
+return [
+    'accepted' => 'Veuillez accepter :attribute.',
+    'array' => 'Le champ :attribute est invalide.',
+    'email' => 'Indiquez une adresse e-mail valide.',
+    'exists' => 'La valeur choisie pour :attribute est invalide.',
+    'extensions' => 'Format non accepté. Formats autorisés : :values.',
+    'file' => 'Le champ :attribute doit être un fichier.',
+    'in' => 'La valeur choisie pour :attribute est invalide.',
+    'integer' => 'Le champ :attribute doit être un nombre entier.',
+    'max' => [
+        'array' => 'Vous pouvez joindre au maximum :max fichiers.',
+        'file' => 'Le fichier ne doit pas dépasser :max Ko.',
+        'numeric' => 'Le champ :attribute ne doit pas dépasser :max.',
+        'string' => 'Le champ :attribute ne doit pas dépasser :max caractères.',
+    ],
+    'mimes' => 'Format non accepté. Formats autorisés : :values.',
+    'mimetypes' => 'Ce type de fichier n’est pas accepté.',
+    'min' => [
+        'array' => 'Joignez au moins :min fichier(s).',
+        'numeric' => 'Le champ :attribute doit être au moins :min.',
+        'string' => 'Le champ :attribute doit contenir au moins :min caractères.',
+    ],
+    'prohibited' => 'Envoi invalide.',
+    'regex' => 'Le format du champ :attribute est invalide.',
+    'required' => 'Le champ :attribute est obligatoire.',
+    'required_without' => 'Le champ :attribute est obligatoire si :values n’est pas renseigné.',
+    'string' => 'Le champ :attribute doit être un texte.',
+    'uploaded' => 'Le fichier n’a pas pu être envoyé. Réessayez.',
+    'url' => 'Le champ :attribute doit être une adresse valide.',
+    'unique' => 'Cette valeur est déjà utilisée.',
+    'numeric' => 'Le champ :attribute doit être un nombre.',
+    'attributes' => [],
+];

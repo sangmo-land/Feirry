@@ -48,9 +48,9 @@
     --color-jade-bright: #38ba88;
 
     /* Type */
-    --font-display: 'Archivo', 'Arial Narrow', system-ui, sans-serif;
+    --font-display: 'Clash Display', 'Space Grotesk', system-ui, sans-serif;
     --font-sans: 'Manrope', ui-sans-serif, system-ui, sans-serif;
-    --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', monospace;
+    --font-mono: 'Manrope', ui-sans-serif, system-ui, sans-serif;
 
     /* Motion */
     --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);

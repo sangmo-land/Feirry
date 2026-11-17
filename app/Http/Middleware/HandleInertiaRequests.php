@@ -34,7 +34,9 @@ class HandleInertiaRequests extends Middleware
             // the markup and the id inside the structured data describing it
             // cannot drift apart.
             'locationAnchor' => Seo::locationAnchor(),
-            'translations' => fn () => trans('site'),
+            // Only the legacy careers pages still read these strings; the V7 pages
+            // carry their own interface dictionary.
+            'translations' => fn () => $request->routeIs('careers.*', 'en.careers.*') ? trans('site') : [],
             'site' => fn () => SiteSettings::forFrontend($locale),
             'seo' => fn () => Seo::get(),
             /*

@@ -46,8 +46,9 @@ class SiteSettingsTest extends TestCase
         $fr = SiteSettings::forFrontend('fr');
         $en = SiteSettings::forFrontend('en');
 
-        $this->assertNotSame($fr['stats'][0]['label'], $en['stats'][0]['label']);
-        $this->assertNotSame($fr['contact']['hours'], $en['contact']['hours']);
+        // No unverified figures are published (CDC V7 §00).
+        $this->assertSame([], $fr['stats']);
+        $this->assertSame($fr['brand']['tagline'], $en['brand']['tagline']);
     }
 
     public function test_the_slogan_is_never_translated(): void

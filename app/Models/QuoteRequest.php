@@ -12,12 +12,16 @@ class QuoteRequest extends Model
 
     protected $guarded = [];
 
-    protected $casts = ['contacted_at' => 'datetime'];
+    protected $casts = [
+        'contacted_at' => 'datetime',
+        'attachments' => 'array',
+        'privacy_accepted_at' => 'datetime',
+    ];
 
     protected static function booted(): void
     {
         static::creating(function (self $quote) {
-            $quote->reference ??= 'DEV-'.now()->format('ymd').'-'.Str::upper(Str::random(4));
+            $quote->reference ??= 'FEI-'.now()->format('ymd').'-'.Str::upper(Str::random(4));
         });
     }
 

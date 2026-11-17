@@ -11,77 +11,70 @@
 
 return [
 
+    /*
+    | Only verified information (CDC V7 §00): every value below comes from the
+    | FEIRRY letterhead or was confirmed by the director. Anything not yet
+    | confirmed is null and simply not displayed — never invented.
+    */
     'brand' => [
         'name' => 'FEIRRY',
-        'legal_name' => 'FEIRRY SARL — Bâtiment et Travaux Publics',
+        'legal_name' => 'FEIRRY Construction Designs',
         // Carried untranslated, in both locales: it is part of the identity.
         'tagline' => 'Shaping a brighter tomorrow',
-        'founded' => 2009,
+        'founded' => 2021,
     ],
 
     'contact' => [
-        'address' => 'Rue Joss, Immeuble Kondo, 3ᵉ étage',
-        'district' => 'Bonanjo',
+        'address' => 'Carrefour BP Cité',
+        'district' => null,
         'city' => 'Douala',
         'region' => 'Littoral',
         'country' => 'Cameroun',
-        'postal_box' => 'BP 12457 Douala',
-        'phone' => '+237 6 99 45 12 80',
-        'phone_secondary' => '+237 2 33 42 18 06',
-        'whatsapp' => '237694451280',
-        'email' => 'contact@feirry.org',
-        'email_rh' => 'recrutement@feirry.org',
-        'email_devis' => 'devis@feirry.org',
-        'hours_fr' => 'Lun – Ven : 07h30 – 17h30 · Sam : 08h00 – 13h00',
-        'hours_en' => 'Mon – Fri: 7:30am – 5:30pm · Sat: 8:00am – 1:00pm',
-
-        /*
-        | The same opening hours a second time, in the shape schema.org asks
-        | for. The strings above are what a visitor reads; this is what Google
-        | parses into the opening-hours line of a local result. They are kept
-        | adjacent so a change to one is an obvious prompt to change the other.
-        */
-        'opening_hours' => [
-            [
-                'days' => ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
-                'opens' => '07:30',
-                'closes' => '17:30',
-            ],
-            [
-                'days' => ['Saturday'],
-                'opens' => '08:00',
-                'closes' => '13:00',
-            ],
-        ],
-        // The pin the client shared, resolved from its maps.app.goo.gl short
-        // link. The previous pair pointed at the middle of Bonanjo, some 2.7 km
-        // west of the office. All three are overridable from the dashboard.
-        'maps_url' => 'https://maps.app.goo.gl/nzyHafywg61D5aUA6',
-        'latitude' => 4.047588,
-        'longitude' => 9.728659,
+        'postal_box' => null,
+        'secondary_presence' => 'Yaoundé',
+        'phone' => '+237 670 729 579',
+        'phone_label' => 'MTN',
+        'phone_secondary' => '+237 696 645 970',
+        'phone_secondary_label' => 'Orange',
+        'whatsapp' => '237670729579',
+        'email' => 'contact@feirry.co',
+        'email_rh' => 'contact@feirry.co',
+        'email_devis' => 'contact@feirry.co',
+        // Opening hours not yet confirmed by FEIRRY: hidden until set in the admin.
+        'hours_fr' => null,
+        'hours_en' => null,
+        'opening_hours' => [],
+        'maps_url' => null,
+        'latitude' => null,
+        'longitude' => null,
     ],
 
     'legal' => [
-        'rccm' => 'RC/DLA/2009/B/4187',
-        'niu' => 'M090912345678L',
-        'capital' => '150 000 000 FCFA',
-        'insurer' => 'Chanas Assurances — Police RC Décennale n° 0982-114',
+        'rccm' => 'RC/DLA/2021/B/72',
+        'niu' => 'M012115429036Z',
+        'capital' => null,
+        'insurer' => null,
     ],
 
+    /*
+    | Where new leads are announced. Set LEADS_NOTIFY_EMAIL in the server's
+    | .env; nothing is sent while it is empty (requests stay in the admin).
+    */
+    'leads' => [
+        'notify' => env('LEADS_NOTIFY_EMAIL'),
+    ],
+
+    // Filled from the admin once the official pages are confirmed.
     'social' => [
-        'facebook' => 'https://facebook.com/feirry',
-        'linkedin' => 'https://linkedin.com/company/feirry',
-        'instagram' => 'https://instagram.com/feirry',
-        'tiktok' => 'https://tiktok.com/@feirry',
-        'youtube' => 'https://youtube.com/@feirry',
+        'facebook' => null,
+        'linkedin' => null,
+        'instagram' => null,
+        'tiktok' => null,
+        'youtube' => null,
     ],
 
-    'stats' => [
-        ['value' => 16, 'suffix' => '', 'label_fr' => "Années d'expérience", 'label_en' => 'Years of experience'],
-        ['value' => 240, 'suffix' => '+', 'label_fr' => 'Chantiers livrés', 'label_en' => 'Projects delivered'],
-        ['value' => 385, 'suffix' => '', 'label_fr' => 'Collaborateurs', 'label_en' => 'People on staff'],
-        ['value' => 98, 'suffix' => '%', 'label_fr' => 'Livraisons dans les délais', 'label_en' => 'On-time delivery'],
-    ],
+    // No figures are published until FEIRRY validates them (CDC §00).
+    'stats' => [],
 
     'locales' => [
         'fr' => ['label' => 'Français', 'short' => 'FR'],
@@ -111,6 +104,13 @@ return [
     | same in both languages — able to exist twice.
     */
     'segments' => [
+        'feirry' => 'feirry',
+        'expertises' => 'expertise',
+        'projets' => 'projects',
+        'offres' => 'offers',
+        'coup-de-pouce' => 'coup-de-pouce',
+        'conseils' => 'advice',
+        'mon-projet' => 'my-project',
         'entreprise' => 'company',
         'methode' => 'method',
         'equipe' => 'team',

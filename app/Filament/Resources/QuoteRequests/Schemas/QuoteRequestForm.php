@@ -62,7 +62,15 @@ class QuoteRequestForm
                         TextInput::make('timeline')->label('Échéance souhaitée')->disabled(),
                         TextInput::make('location')->label('Lieu du chantier')->disabled(),
                         TextInput::make('surface_m2')->label('Surface (m²)')->disabled(),
-                        TextInput::make('attachment')->label('Pièce jointe')->disabled(),
+                        TextInput::make('need')->label('Besoin')->disabled(),
+                        TextInput::make('offer')->label('Formule choisie')->disabled(),
+                        TextInput::make('programme')->label('Programme')->disabled(),
+                        TextInput::make('phase')->label('Phase')->disabled(),
+                        TextInput::make('land_status')->label('Terrain')->disabled(),
+                        TextInput::make('size')->label('Surface / niveaux')->disabled(),
+                        TextInput::make('contact_preference')->label('Contact préféré')->disabled(),
+                        TextInput::make('locale')->label('Langue')->disabled(),
+                        \App\Filament\Support\LeadAttachments::field('quote'),
                         Textarea::make('message')
                             ->label('Message du prospect')
                             ->rows(6)

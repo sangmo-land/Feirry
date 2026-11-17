@@ -168,7 +168,7 @@ class SearchEngineTest extends TestCase
     protected function schemaFrom(string $html): array
     {
         preg_match(
-            '#<script type="application/ld\+json">(.*?)</script>#s',
+            '#<script type="application/ld\+json"[^>]*>(.*?)</script>#s',
             $html,
             $matches,
         );

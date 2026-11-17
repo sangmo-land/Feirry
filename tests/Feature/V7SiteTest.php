@@ -93,7 +93,7 @@ class V7SiteTest extends TestCase
         config(['site.leads.notify' => 'equipe@example.test']);
 
         $this->post('/mon-projet', $this->validProject([
-            'attachments' => [UploadedFile::fake()->create('plan.pdf', 200, 'application/pdf')],
+            'attachments' => [UploadedFile::fake()->createWithContent('plan.pdf', "%PDF-1.4\n%%EOF")],
         ]))->assertRedirect()->assertSessionHas('reference');
 
         $lead = QuoteRequest::firstOrFail();
@@ -139,7 +139,7 @@ class V7SiteTest extends TestCase
     /* DATA-01 — documents only for signed-in administrators */
     public function test_lead_documents_require_an_administrator(): void
     {
-        $this->post('/mon-projet', $this->validProject(['attachments' => [UploadedFile::fake()->create('plan.pdf', 20, 'application/pdf')]]));
+        $this->post('/mon-projet', $this->validProject(['attachments' => [UploadedFile::fake()->createWithContent('plan.pdf', "%PDF-1.4\n%%EOF")]]));
         $lead = QuoteRequest::firstOrFail();
         $url = "/admin/fichiers/quote/{$lead->id}/0";
 

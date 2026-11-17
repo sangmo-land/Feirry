@@ -112,6 +112,8 @@ class FormFields
         return FileUpload::make($field)
             ->label($label)
             ->image()
+            // No SVG: an SVG can carry script and is served from the site's own domain.
+            ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
             ->imageEditor()
             ->disk('public')
             ->directory($directory)
@@ -124,6 +126,7 @@ class FormFields
         return FileUpload::make($field)
             ->label($label)
             ->image()
+            ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
             ->multiple()
             ->reorderable()
             ->appendFiles()

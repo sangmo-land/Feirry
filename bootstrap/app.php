@@ -18,13 +18,18 @@ return Application::configure(basePath: dirname(__DIR__))
         // SetLocale stays ahead of HandleInertiaRequests: Inertia resolves the
         // locale eagerly when it builds its shared props, so the language has
         // to be settled before it runs.
+        $middleware->web(prepend: [
+            \App\Http\Middleware\SecurityHeaders::class,
+        ]);
+
         $middleware->web(append: [
             SetLocale::class,
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
         ]);
 
-        $middleware->trustProxies(at: '*');
+        // Proxies are trusted only when listed (TRUSTED_PROXIES, see AppServiceProvider):
+        // trusting every proxy let anyone forge their IP and bypass rate limits.
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

@@ -69,6 +69,10 @@ return [
     | Initial values proposed by the specification; adjust to the hosting
     | (PHP upload_max_filesize / post_max_size must allow them).
     */
+    /* Network security: reverse proxies allowed to forward the client IP, HTTPS links. */
+    'trusted_proxies' => env('TRUSTED_PROXIES'),
+    'force_https' => (bool) env('FORCE_HTTPS', env('APP_ENV') === 'production'),
+
     /* Two-factor sign-in for every admin account (CDC Coup de Pouce §22). */
     'admin_mfa_required' => (bool) env('ADMIN_MFA_REQUIRED', false),
 

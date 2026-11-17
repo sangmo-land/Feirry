@@ -110,7 +110,7 @@ class CoupDePouceTest extends TestCase
     /* COM — communication and referents never reach project-request plans or contacts */
     public function test_other_inbound_requests_are_administration_only(): void
     {
-        $this->post('/mon-projet', ['need' => 'construction', 'location' => 'Douala', 'name' => 'Client Test', 'phone' => '+237 670 000 000', 'contact_preference' => 'telephone', 'privacy' => '1', 'attachments' => [UploadedFile::fake()->create('plan.pdf', 20, 'application/pdf')]]);
+        $this->post('/mon-projet', ['need' => 'construction', 'location' => 'Douala', 'name' => 'Client Test', 'phone' => '+237 670 000 000', 'contact_preference' => 'telephone', 'privacy' => '1', 'attachments' => [UploadedFile::fake()->createWithContent('plan.pdf', "%PDF-1.4\n%%EOF")]]);
         $q = \App\Models\QuoteRequest::firstOrFail();
         foreach (['communication', 'referent'] as $role) {
             $u = User::factory()->create(['role' => $role]);
@@ -190,14 +190,14 @@ class CoupDePouceTest extends TestCase
     public function test_uploads_are_private_and_checked(): void
     {
         $this->open();
-        $this->post('/coup-de-pouce/demandes', $this->formA(['attachments' => [UploadedFile::fake()->create('plan.pdf', 200, 'application/pdf')]]))->assertRedirect();
+        $this->post('/coup-de-pouce/demandes', $this->formA(['attachments' => [UploadedFile::fake()->createWithContent('plan.pdf', "%PDF-1.4\n%%EOF")]]))->assertRedirect();
         $r = AssistanceRequest::firstOrFail();
         $this->assertStringStartsWith($r->storageFolder('originaux'), $r->attachments[0]['path']);
         Storage::disk('local')->assertExists($r->attachments[0]['path']);
 
         $this->post('/coup-de-pouce/demandes', $this->formA(['attachments' => [UploadedFile::fake()->image('photo.jpg')]]))->assertSessionHasErrors('attachments.0');
         $this->post('/coup-de-pouce/demandes', $this->formA(['attachments' => [UploadedFile::fake()->create('big.pdf', 16000, 'application/pdf')]]))->assertSessionHasErrors('attachments.0');
-        $this->post('/coup-de-pouce/demandes', $this->formB(['attachments' => [UploadedFile::fake()->create('plan.pdf', 20, 'application/pdf')]]))->assertSessionHasErrors('attachments.0');
+        $this->post('/coup-de-pouce/demandes', $this->formB(['attachments' => [UploadedFile::fake()->createWithContent('plan.pdf', "%PDF-1.4\n%%EOF")]]))->assertSessionHasErrors('attachments.0');
         $this->assertSame(1, AssistanceRequest::count());
     }
 
@@ -232,7 +232,7 @@ class CoupDePouceTest extends TestCase
     public function test_roles_restrict_access_to_requests_and_files(): void
     {
         $this->open();
-        $this->post('/coup-de-pouce/demandes', $this->formA(['attachments' => [UploadedFile::fake()->create('plan.pdf', 20, 'application/pdf')]]));
+        $this->post('/coup-de-pouce/demandes', $this->formA(['attachments' => [UploadedFile::fake()->createWithContent('plan.pdf', "%PDF-1.4\n%%EOF")]]));
         $r = AssistanceRequest::firstOrFail();
         $url = "/admin/fichiers/assistance/{$r->id}/0";
 

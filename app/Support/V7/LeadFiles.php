@@ -26,11 +26,31 @@ class LeadFiles
                 'max:'.self::MAX_KB,
                 'extensions:'.implode(',', self::EXTENSIONS),
                 'mimetypes:application/pdf,image/jpeg,image/png,image/vnd.dwg,application/acad,application/x-acad,application/x-dwg,application/dwg,application/octet-stream',
+                // The content must match the extension: a renamed executable or script is refused.
+                function (string $attribute, mixed $file, \Closure $fail) {
+                    if ($file instanceof UploadedFile && ! self::contentMatchesExtension($file)) {
+                        $fail(trans('v7.errors.file_type'));
+                    }
+                },
             ],
         ];
     }
 
     /** @param  UploadedFile[]  $files */
+    /** Checks the file signature ("magic bytes") against the declared extension. */
+    public static function contentMatchesExtension(UploadedFile $file): bool
+    {
+        $head = (string) @file_get_contents($file->getRealPath(), false, null, 0, 8);
+
+        return match (strtolower($file->getClientOriginalExtension())) {
+            'pdf' => str_starts_with($head, '%PDF-'),
+            'jpg', 'jpeg' => str_starts_with($head, "\xFF\xD8\xFF"),
+            'png' => str_starts_with($head, "\x89PNG\r\n\x1A\n"),
+            'dwg' => str_starts_with($head, 'AC10') || str_starts_with($head, 'AC1.') || str_starts_with($head, 'AC2'),
+            default => false,
+        };
+    }
+
     public static function store(array $files, string $folder): array
     {
         return collect($files)

@@ -112,7 +112,7 @@ class Project extends Model
     public function toDetail(): array
     {
         return array_merge($this->toCard(), [
-            'body' => $this->tr('body'),
+            'body' => \App\Support\SafeHtml::clean($this->tr('body')),
             'challenge' => $this->tr('challenge'),
             'solution' => $this->tr('solution'),
             'outcome' => $this->tr('outcome'),

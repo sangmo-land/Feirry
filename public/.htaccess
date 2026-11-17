@@ -5,6 +5,9 @@
 
     RewriteEngine On
 
+    # Hidden files (.env, .git, .htpasswd…) are never served; .well-known stays reachable.
+    RewriteRule (^|/)\.(?!well-known/) - [F,L]
+
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
@@ -39,7 +42,10 @@
     <FilesMatch "\.(webp|jpg|jpeg|png|svg|ico)$">
         Header set Cache-Control "public, max-age=2592000"
     </FilesMatch>
-    Header always set X-Content-Type-Options "nosniff"
-    Header always set Referrer-Policy "strict-origin-when-cross-origin"
-    Header always set X-Frame-Options "SAMEORIGIN"
+    Header setifempty X-Content-Type-Options "nosniff"
+    Header setifempty Referrer-Policy "strict-origin-when-cross-origin"
+    Header setifempty X-Frame-Options "SAMEORIGIN"
+    Header always unset X-Powered-By
+    Header unset X-Powered-By
 </IfModule>
+

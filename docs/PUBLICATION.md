@@ -29,12 +29,12 @@ git rm -q app/Http/Controllers/Site/{Contact,Home,Page,Project,Quote,Service}Con
   resources/js/Layouts/SiteLayout.jsx \
   resources/js/Pages/{About,Contact,Faq,Home,Legal,Process,Quote,Team}.jsx \
   resources/js/Pages/{Blog,Projects,Services}/{Index,Show}.jsx \
-  tests/Feature/{FormSubmissionTest,PageHeroTest,PublicSiteTest}.php \
-  public/build/assets/{app-B5Pq6R0f.css,app-CT4qmrEy.js,motion-BIV-clJw.js,react-DhWLjSIC.js,rolldown-runtime-hePW80VL.js,scroll-BxvexZXi.js}
-git rm -q --ignore-unmatch public/build/assets/{Article-03nCvgb_.js,Conseils-CY6me3EI.js,CoupDePouce-Dj8LnzRr.js,Expertise-DdRYfgmo.js,Expertises-LfZrlVtO.js,Feirry-DxYYzfID.js,Home-BaX32GJH.js,Index-CUKa87Yz.js,Legal-BTvcMTt2.js,MonProjet-BhxTsXTC.js,Offres-Do-0qlmT.js,Projet-BGTY2wrG.js,Projets-BxT5w-so.js,Shared-BQW6BLAT.js,Show-DmQI7116.js,app-DI8MZOSk.js,sections-B-Q_KFL3.js,CoupDePouce-DjIeq-w4.js,CoupDePouceConfirmation-XAQm_Ha5.js,Legal-DsEgTBXW.js,cdp-8xhSvNHe.js}
+  tests/Feature/{FormSubmissionTest,PageHeroTest,PublicSiteTest}.php
+# Anciens fichiers compilés : on retire tout fichier que manifest.json ne référence plus.
+(cd public/build/assets && for f in *; do grep -qF "$f" ../manifest.json || git rm -q "$f"; done)
 git commit -m "Nettoyage des fichiers remplacés par la V7"
 ```
-(La 2e commande retire les anciens fichiers compilés remplacés par la version Coup de Pouce.)
+(La boucle retire les anciens fichiers compilés : seul ce que référence `public/build/manifest.json` est utilisé par le site.)
 
 Ces fichiers ne sont plus utilisés par le site ; sans ce nettoyage, le site fonctionne mais les anciens tests échouent.
 Vérifier aussi que `public/storage` est un vrai dossier sur le serveur (pas un lien symbolique), et que `mod_headers` / `mod_deflate` sont actifs.
@@ -66,6 +66,22 @@ supprimé** : il reste visible dans l’admin.
 - Correctif important : le modèle `User` déclare maintenant l’accès au panneau Filament. Sans cela, Filament refuse
   tous les comptes dès que `APP_ENV` n’est pas `local`.
 
+## 2 ter. Sécurité (audit du 17/11/2026)
+
+- Partir du modèle **`docs/env-production.example`** (à copier en `.env` sur le serveur) : `APP_ENV=production`, `APP_DEBUG=false`, sessions chiffrées et
+  cookies sécurisés, `FORCE_HTTPS=true`, utilisateur MySQL dédié (pas root).
+- `TRUSTED_PROXIES` : à renseigner **uniquement** si le site passe par Cloudflare ou un répartiteur de charge
+  (adresses du proxy). Avant, l’application faisait confiance à n’importe quel proxy : on pouvait falsifier son IP
+  et contourner les limites anti-spam et anti-force brute.
+- En-têtes envoyés par l’application elle-même (CSP stricte avec nonce, X-Frame-Options, Permissions-Policy,
+  Referrer-Policy, HSTS en HTTPS) ; `public/.htaccess` bloque les fichiers cachés (.env, .git) et
+  `public/storage/.htaccess` interdit l’exécution de scripts dans les fichiers téléversés.
+- `php.ini` : `expose_php = Off`. Lancer `composer audit` sur le serveur (impossible depuis mon environnement).
+- Changer le mot de passe admin historique (il apparaît dans l’historique git de `main`). Mots de passe admin :
+  12 caractères minimum avec lettres et chiffres.
+- Double authentification : chaque membre l’active dans « Profil », puis `ADMIN_MFA_REQUIRED=true`.
+- Sauvegardes : base + `storage/app/private` (plans et photos du Coup de Pouce), quotidiennes, testées en restauration.
+
 ## 3. Variables d’environnement (.env du serveur, sans secret dans le dépôt)
 
 | Variable | Rôle |
@@ -74,6 +90,8 @@ supprimé** : il reste visible dans l’admin.
 | `MAIL_MAILER`, `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD`, `MAIL_FROM_ADDRESS` | Service d’envoi d’e-mails. |
 | `ADMIN_EMAIL`, `ADMIN_PASSWORD` | Utilisés uniquement par le seeder en local. |
 | `CDP_PDF_MAX_FILES`, `CDP_PDF_MAX_KB`, `CDP_PHOTO_MAX_FILES`, `CDP_PHOTO_MAX_KB` | Facultatif : limites des pièces Coup de Pouce (défaut 3 × 15360 Ko, 5 × 8192 Ko). |
+| `TRUSTED_PROXIES` | Adresses des proxys de confiance (Cloudflare, répartiteur). Vide = aucun. |
+| `FORCE_HTTPS` | Liens générés en HTTPS (défaut : `true` en production). |
 | `ADMIN_MFA_REQUIRED` | `true` pour imposer la double authentification à tous les comptes admin (défaut `false`). |
 | `GOOGLE_SITE_VERIFICATION`, `BING_SITE_VERIFICATION` | Facultatif. |
 

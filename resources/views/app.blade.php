@@ -70,7 +70,7 @@
     <link rel="apple-touch-icon" href="/favicon.svg">
 
     {{-- Theme applied before first paint: no flash between dark and light (THE-01). --}}
-    <script>
+    <script nonce="{{ \Illuminate\Support\Facades\Vite::cspNonce() }}">
         (function () {
             var t = 'dark';
             try { t = localStorage.getItem('feirry-theme') || 'dark'; } catch (e) {}
@@ -82,8 +82,8 @@
 
     <link rel="preload" href="/fonts/clash/ClashDisplay-Bold.woff2" as="font" type="font/woff2" crossorigin>
 
-    <script type="application/ld+json">
-        {!! json_encode($seo['schema'] ?? \App\Support\Seo::organizationSchema(), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}
+    <script type="application/ld+json" nonce="{{ \Illuminate\Support\Facades\Vite::cspNonce() }}">
+        {!! json_encode($seo['schema'] ?? \App\Support\Seo::organizationSchema(), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP) !!}
     </script>
 
     @viteReactRefresh

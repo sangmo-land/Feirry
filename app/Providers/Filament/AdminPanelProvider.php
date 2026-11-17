@@ -70,6 +70,7 @@ class AdminPanelProvider extends PanelProvider
                 NavigationGroup::make('Réglages')->icon('heroicon-o-cog-6-tooth'),
             ])
             ->middleware([
+                \App\Http\Middleware\SecurityHeaders::class,
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
                 StartSession::class,

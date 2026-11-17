@@ -1,0 +1,1 @@
+import{t as e}from"./react-BXXEWvlK.js";import{t}from"./cdp-8xhSvNHe.js";var n=e();function r({reference:e,message:r}){return(0,n.jsx)(`div`,{className:`f-wrap f-pagehead`,style:{paddingBottom:112},children:(0,n.jsx)(t,{reference:e,message:r})})}export{r as default};

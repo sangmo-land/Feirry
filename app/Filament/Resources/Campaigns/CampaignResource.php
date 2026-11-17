@@ -19,6 +19,11 @@ class CampaignResource extends Resource
 {
     protected static ?string $model = Campaign::class;
 
+    public static function canAccess(): bool
+    {
+        return (bool) auth()->user()?->hasRole('admin', 'administration');
+    }
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedHandRaised;
 
     protected static string|UnitEnum|null $navigationGroup = 'Contenu du site';

@@ -11,14 +11,19 @@ class CampaignsTable
 {
     public static function configure(Table $table): Table
     {
+        $states = ['open' => 'Ouverte', 'waitlist' => 'Liste d’attente', 'upcoming' => 'Ouverture prochaine', 'paused' => 'En pause', 'preparation' => 'Préparation', 'closed' => 'Terminée'];
+
         return $table
             ->columns([
-                TextColumn::make('name')->label('Session')->weight('bold'),
-                TextColumn::make('status')->label('Statut')->badge()
-                    ->formatStateUsing(fn ($state) => ['draft' => 'Brouillon', 'open' => 'Ouverte', 'closed' => 'Clôturée'][$state] ?? $state),
-                TextColumn::make('starts_at')->label('Début')->date('d/m/Y'),
-                TextColumn::make('ends_at')->label('Fin')->date('d/m/Y'),
-                IconColumn::make('accepting')->label('Inscriptions actives')->boolean()->state(fn ($record) => $record->isOpen()),
+                TextColumn::make('name')->label('Édition')->weight('bold'),
+                TextColumn::make('status')->label('État saisi')->badge()
+                    ->formatStateUsing(fn ($state) => ['draft' => 'Préparation', 'open' => 'Ouverte', 'paused' => 'En pause', 'closed' => 'Clôturée'][$state] ?? $state),
+                TextColumn::make('public_state')->label('Affiché sur le site')->badge()->color('gray')
+                    ->state(fn ($record) => $states[$record->publicState()] ?? $record->publicState()),
+                TextColumn::make('announced_at')->label('Ouverture')->date('d/m/Y'),
+                TextColumn::make('starts_at')->label('Interventions du')->date('d/m/Y'),
+                TextColumn::make('ends_at')->label('au')->date('d/m/Y'),
+                IconColumn::make('accepting')->label('Formulaires actifs')->boolean()->state(fn ($record) => $record->accepting()),
                 TextColumn::make('requests_count')->label('Demandes')->counts('requests'),
             ])
             ->recordActions([EditAction::make()]);

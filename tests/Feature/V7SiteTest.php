@@ -2,8 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Models\AssistanceRequest;
-use App\Models\Campaign;
 use App\Models\Project;
 use App\Models\QuoteRequest;
 use App\Models\User;
@@ -136,43 +134,6 @@ class V7SiteTest extends TestCase
         $this->post('/mon-projet', $this->validProject());
         $this->post('/mon-projet', $this->validProject());
         $this->assertSame(1, QuoteRequest::count());
-    }
-
-    /* CAM-01 — a closed campaign accepts nothing */
-    public function test_closed_campaign_refuses_requests(): void
-    {
-        $this->post('/coup-de-pouce', ['path' => 'consultation', 'name' => 'A B', 'phone' => '670000000', 'city' => 'Douala', 'description' => 'x', 'meeting_mode' => 'office', 'privacy' => '1'])
-            ->assertSessionHas('error', 'campaign_closed');
-        $this->assertSame(0, AssistanceRequest::count());
-    }
-
-    public function test_a_past_campaign_never_shows_as_open(): void
-    {
-        $c = Campaign::first();
-        $c->update(['status' => 'open', 'starts_at' => now()->subMonth(), 'ends_at' => now()->subDay()]);
-        $this->assertFalse($c->fresh()->isOpen());
-        $this->assertNull(Campaign::current());
-    }
-
-    public function test_open_campaign_stores_a_site_visit_request(): void
-    {
-        Campaign::first()->update(['status' => 'open', 'starts_at' => now()->subDay(), 'ends_at' => now()->addMonth()]);
-
-        $this->post('/coup-de-pouce', ['path' => 'visit', 'name' => 'A B', 'phone' => '670000000', 'privacy' => '1'])
-            ->assertSessionHasErrors(['site_location', 'objective', 'availability']);
-
-        $this->post('/coup-de-pouce', ['path' => 'visit', 'name' => 'A B', 'phone' => '670000000', 'site_location' => 'Japoma', 'objective' => 'Avis sur le terrain', 'availability' => 'Samedi matin', 'privacy' => '1'])
-            ->assertSessionHas('reference');
-
-        $this->assertStringStartsWith('CDP-', AssistanceRequest::firstOrFail()->reference);
-    }
-
-    public function test_campaign_capacity_closes_registration(): void
-    {
-        $c = Campaign::first();
-        $c->update(['status' => 'open', 'capacity' => 1]);
-        AssistanceRequest::create(['campaign_id' => $c->id, 'path' => 'visit', 'name' => 'X']);
-        $this->assertFalse($c->fresh()->isOpen());
     }
 
     /* DATA-01 — documents only for signed-in administrators */

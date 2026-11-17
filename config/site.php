@@ -64,6 +64,20 @@ return [
         'notify' => env('LEADS_NOTIFY_EMAIL'),
     ],
 
+    /*
+    | Coup de Pouce FEIRRY — upload limits (CDC Coup de Pouce §06, §07).
+    | Initial values proposed by the specification; adjust to the hosting
+    | (PHP upload_max_filesize / post_max_size must allow them).
+    */
+    'cdp' => [
+        'pdf_max_files' => (int) env('CDP_PDF_MAX_FILES', 3),
+        'pdf_max_kb' => (int) env('CDP_PDF_MAX_KB', 15360),
+        'photo_max_files' => (int) env('CDP_PHOTO_MAX_FILES', 5),
+        'photo_max_kb' => (int) env('CDP_PHOTO_MAX_KB', 8192),
+        // Version of the privacy notice the applicant agreed to.
+        'notice_version' => '2026-11-v1',
+    ],
+
     // Filled from the admin once the official pages are confirmed.
     'social' => [
         'facebook' => null,

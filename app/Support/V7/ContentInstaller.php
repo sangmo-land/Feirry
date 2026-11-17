@@ -90,7 +90,11 @@ class ContentInstaller
         }
     }
 
-    /** The programme exists but is not launched: a draft campaign, closed to requests. */
+    /**
+     * The 2026 pilot edition, as set in the Coup de Pouce specification
+     * (17 Nov 2026): prepared, not open. FEIRRY opens it from the admin once
+     * the go/no-go is given; every value below stays editable there.
+     */
     protected static function campaign(): void
     {
         if (Campaign::query()->exists()) {
@@ -98,8 +102,24 @@ class ContentInstaller
         }
 
         Campaign::create([
-            'name' => 'Coup de Pouce FEIRRY — première session',
+            'slug' => 'edition-2026-fin-annee',
+            'name' => 'Coup de Pouce FEIRRY — édition pilote 2026',
+            'edition' => '2026-fin-annee',
             'status' => 'draft',
+            'announced_at' => '2026-11-20',
+            'starts_at' => '2026-11-23',
+            'ends_at' => '2026-12-19',
+            'public_consultations' => 10,
+            'public_visits' => 5,
+            'internal_consultations' => 20,
+            'internal_visits' => 20,
+            'zone_fr' => 'Douala',
+            'zone_en' => 'Douala',
+            'visit_zone_keywords' => 'douala',
+            'banner_fr' => 'Édition fin d’année 2026',
+            'banner_en' => '2026 end-of-year edition',
+            'terms_fr' => "Orientation technique préliminaire gratuite, sans engagement d’achat ni devis exigé.\nLes demandes sont étudiées par l’équipe FEIRRY : places limitées, sélection et confirmation par FEIRRY. L’envoi d’une demande ne réserve aucun créneau.\nConsultations au bureau le lundi (ou en visioconférence) ; visites de chantier le mercredi et le jeudi, à Douala.\nUn rapport préliminaire est remis après l’intervention. Il ne remplace pas une étude complète ni une mission réglementaire.\nRefuser la prospection commerciale ou la publication de photos ne change rien à l’accès au programme.",
+            'terms_en' => "Free preliminary technical guidance, with no purchase commitment and no quote required.\nRequests are reviewed by the FEIRRY team: places are limited, subject to selection and confirmation by FEIRRY. Sending a request does not book a slot.\nConsultations at the office on Mondays (or by video call); site visits on Wednesdays and Thursdays, in Douala.\nA preliminary report is provided after the intervention. It does not replace a full study or a regulatory mission.\nDeclining marketing or photo publication does not affect access to the programme.",
             'consultation_enabled' => true,
             'visit_enabled' => true,
         ]);

@@ -9,27 +9,28 @@ const digits = (v) => (v || '').replace(/\D/g, '').length;
 const emailOk = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v || '');
 
 /** Client checks mirror the server rules; the server stays the authority. */
-function checkFiles(list, current, F) {
+function checkFiles(list, current, rules, msg) {
     const errors = [];
     const ok = [];
     for (const f of list) {
         const ext = (f.name.split('.').pop() || '').toLowerCase();
-        if (!EXT.includes(ext)) errors.push(`« ${f.name} » ${F.errFileType}`);
-        else if (f.size > MAX_BYTES) errors.push(`« ${f.name} » ${F.errFileSize}`);
+        if (!rules.exts.includes(ext)) errors.push(`« ${f.name} » — ${msg.type}`);
+        else if (f.size > rules.maxBytes) errors.push(`« ${f.name} » — ${msg.size}`);
         else ok.push(f);
     }
     const merged = [...current, ...ok];
-    if (merged.length > MAX_FILES) errors.push(F.errFileCount);
-    return { files: merged.slice(0, MAX_FILES), errors };
+    if (merged.length > rules.maxFiles) errors.push(msg.count);
+    return { files: merged.slice(0, rules.maxFiles), errors };
 }
 
-export function UploadZone({ id, files, onChange, label, hint, required = false }) {
+export function UploadZone({ id, files, onChange, label, hint, required = false, exts = EXT, maxBytes = MAX_BYTES, maxFiles = MAX_FILES, messages }) {
     const { L } = useV7();
     const F = L.form;
+    const msg = messages ?? { type: F.errFileType, size: F.errFileSize, count: F.errFileCount };
     const [errors, setErrors] = useState([]);
     const [drag, setDrag] = useState(false);
     const add = (list) => {
-        const r = checkFiles(Array.from(list || []), files, F);
+        const r = checkFiles(Array.from(list || []), files, { exts, maxBytes, maxFiles }, msg);
         setErrors(r.errors);
         onChange(r.files);
     };
@@ -54,7 +55,7 @@ export function UploadZone({ id, files, onChange, label, hint, required = false 
                     <span style={{ display: 'block', color: 'var(--v-text)' }}>{label}{required ? ' *' : ''}</span>
                     <span style={{ display: 'block', fontSize: 13, fontWeight: 500 }}>{hint}</span>
                 </span>
-                <input id={id} type="file" multiple accept=".pdf,.jpg,.jpeg,.png,.dwg" onChange={(e) => { add(e.target.files); e.target.value = ''; }} aria-describedby={`${id}-err`} />
+                <input id={id} type="file" multiple accept={exts.map((e) => `.${e}`).join(',')} onChange={(e) => { add(e.target.files); e.target.value = ''; }} aria-describedby={`${id}-err`} />
             </label>
             {files.length > 0 && (
                 <ul className="f-list" style={{ gap: 6, fontSize: 14 }}>
@@ -86,7 +87,7 @@ export function UploadZone({ id, files, onChange, label, hint, required = false 
     );
 }
 
-function Field({ id, label, error, hint, children }) {
+export function Field({ id, label, error, hint, children }) {
     return (
         <div className="f-field">
             <label htmlFor={id}>{label}</label>
@@ -101,7 +102,7 @@ function Field({ id, label, error, hint, children }) {
     );
 }
 
-function Input({ id, value, onChange, error, hint, type = 'text', autoComplete, inputMode, textarea = false, required = false }) {
+export function Input({ id, value, onChange, error, hint, type = 'text', autoComplete, inputMode, textarea = false, required = false }) {
     const props = {
         id,
         className: 'f-input',
@@ -117,7 +118,7 @@ function Input({ id, value, onChange, error, hint, type = 'text', autoComplete, 
     return textarea ? <textarea rows={3} {...props} /> : <input type={type} {...props} />;
 }
 
-function Choices({ label, options, value, onPick, round = false, cols = 2, error }) {
+export function Choices({ label, options, value, onPick, round = false, cols = 2, error }) {
     return (
         <fieldset style={{ border: 0, margin: 0, padding: 0 }}>
             <legend style={{ fontSize: 14, fontWeight: 700, marginBottom: 10, padding: 0 }}>{label}</legend>
@@ -152,7 +153,7 @@ function Consent({ id, checked, onChange, error }) {
     );
 }
 
-function Banner({ text }) {
+export function Banner({ text }) {
     if (!text) return null;
     return (
         <div role="alert" style={{ padding: '12px 14px', borderRadius: 14, border: '1px solid var(--v-err)', color: 'var(--v-err)', fontWeight: 600, fontSize: 14, lineHeight: 1.5 }}>
@@ -452,192 +453,3 @@ export function ProjectWizard({ offers = [], preset = {} }) {
     );
 }
 
-/* ------------------------------------------------------------------ */
-/* Coup de Pouce — consultation or site visit (CDC §08)                */
-/* ------------------------------------------------------------------ */
-
-const CDP_EMPTY = { name: '', phone: '', email: '', city: '', project_type: '', description: '', meeting_mode: '', site_location: '', objective: '', access_constraints: '', availability: '', privacy: false };
-
-export function CdpForm({ campaign, compact = false }) {
-    const { L, path } = useV7();
-    const F = L.form;
-    const paths = ['consultation', 'visit'].filter((p) => campaign[p] !== false);
-    const [mode, setMode] = useState(paths[0] ?? 'consultation');
-    const [form, setForm] = useState(CDP_EMPTY);
-    const [files, setFiles] = useState([]);
-    const [errors, setErrors] = useState({});
-    const [banner, setBanner] = useState('');
-    const [sending, setSending] = useState(false);
-    const [reference, setReference] = useState('');
-    const box = useRef(null);
-
-    if (!campaign.open) {
-        return (
-            <div role="status" style={{ padding: 24, borderRadius: 20, border: '1px solid var(--v-line-strong)', background: 'var(--v-surface)' }}>
-                <div style={{ fontFamily: "'Clash Display', sans-serif", fontSize: 22, fontWeight: 700 }}>{L.cdpClosedTitle}</div>
-                <p className="f-muted" style={{ margin: '8px 0 16px', lineHeight: 1.6 }}>{L.cdpClosedText}</p>
-                <div className="g2" style={{ gap: 8, marginBottom: 16 }}>
-                    {paths.map((p) => (
-                        <div key={p} style={{ padding: '12px 14px', borderRadius: 16, border: '1.5px solid var(--v-line-strong)' }}>
-                            <span style={{ display: 'block', fontWeight: 800, fontSize: 15 }}>{L.cdpPaths[p][0]}</span>
-                            <span className="f-muted" style={{ display: 'block', marginTop: 2, fontSize: 13 }}>{L.cdpPaths[p][1]}</span>
-                        </div>
-                    ))}
-                </div>
-                <A className="f-btn f-btn-primary" href="/mon-projet">{L.cdpClosedCta}</A>
-            </div>
-        );
-    }
-
-    const set = (k) => (v) => {
-        setForm((f) => ({ ...f, [k]: v }));
-        setErrors((e) => ({ ...e, [k]: undefined }));
-    };
-    const visit = mode === 'visit';
-
-    const validate = () => {
-        const e = {};
-        if (form.name.trim().length < 2) e.name = F.errName;
-        if (!form.phone.trim() && !form.email.trim()) e.phone = F.errContact;
-        if (form.phone.trim() && digits(form.phone) < 9) e.phone = F.errPhone;
-        if (form.email.trim() && !emailOk(form.email)) e.email = F.errEmail;
-        if (!visit) {
-            if (!form.city.trim()) e.city = F.errRequired;
-            if (!form.description.trim()) e.description = F.errRequired;
-            if (!form.meeting_mode) e.meeting_mode = F.errRequired;
-            if (campaign.documents_required && !files.length) e.attachments = F.errRequired;
-        } else {
-            if (!form.site_location.trim()) e.site_location = F.errRequired;
-            if (!form.objective.trim()) e.objective = F.errRequired;
-            if (!form.availability.trim()) e.availability = F.errRequired;
-        }
-        if (!form.privacy) e.privacy = F.errPrivacy;
-        setErrors(e);
-        return Object.keys(e).length === 0;
-    };
-
-    const submit = (ev) => {
-        ev.preventDefault();
-        setBanner('');
-        if (!validate()) {
-            setBanner(F.errCheck);
-            return;
-        }
-        setSending(true);
-        const data = { ...form, path: mode, privacy: 1, website: '' };
-        files.forEach((f, i) => (data[`attachments[${i}]`] = f));
-        router.post(path('/coup-de-pouce'), data, {
-            forceFormData: true,
-            preserveScroll: true,
-            preserveState: true,
-            onSuccess: (page) => {
-                if (page.props.flash?.reference) {
-                    setReference(page.props.flash.reference);
-                    window.setTimeout(() => box.current?.focus(), 20);
-                } else if (page.props.flash?.error === 'campaign_closed') {
-                    setBanner(F.campaignClosed);
-                } else {
-                    setBanner(F.errServer);
-                }
-            },
-            onError: (errs) => {
-                const mapped = {};
-                Object.entries(errs).forEach(([k, v]) => (mapped[k.startsWith('attachments') ? 'attachments' : k] = v));
-                setErrors(mapped);
-                setBanner(F.errCheck);
-            },
-            onNetworkError: () => {
-                setBanner(F.errNetwork);
-                return false;
-            },
-            onHttpException: (r) => {
-                setBanner(failureText(F, 'http', r?.status));
-                return false;
-            },
-            onFinish: () => setSending(false),
-        });
-    };
-
-    if (reference) {
-        return (
-            <div ref={box} tabIndex={-1} role="status" style={{ padding: 24, borderRadius: 20, background: 'rgba(1,178,124,.14)', border: '1px solid rgba(1,178,124,.5)', outline: 'none' }}>
-                <div style={{ fontFamily: "'Clash Display', sans-serif", fontSize: 22, fontWeight: 700 }}>{L.cdpThanks}</div>
-                <p className="f-muted" style={{ margin: '8px 0 8px', lineHeight: 1.6 }}>{L.cdpThanksText[mode]}</p>
-                <p style={{ margin: '0 0 16px', fontWeight: 700 }}>{F.doneRef} <span className="f-accent">{reference}</span></p>
-                <button type="button" onClick={() => { setReference(''); setForm(CDP_EMPTY); setFiles([]); }} className="f-btn f-btn-sm f-btn-ghost f-btn-inline">{F.restart}</button>
-            </div>
-        );
-    }
-
-    return (
-        <form onSubmit={submit} noValidate style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-            <div role="radiogroup" aria-label={L.cdpPathAria} className="g2" style={{ gap: 8, marginBottom: 4 }}>
-                {paths.map((p) => (
-                    <button key={p} type="button" role="radio" aria-checked={mode === p} className="f-choice" onClick={() => { setMode(p); setErrors({}); }} style={{ minHeight: 64 }}>
-                        <span style={{ display: 'block', fontWeight: 800 }}>{L.cdpPaths[p][0]}</span>
-                        <span className="f-muted" style={{ display: 'block', marginTop: 2, fontSize: 13, fontWeight: 500 }}>{L.cdpPaths[p][1]}</span>
-                    </button>
-                ))}
-            </div>
-            <Banner text={banner} />
-            <div className="g2" style={{ gap: 12 }}>
-                <Field id="c-name" label={F.name} error={errors.name}>
-                    <Input id="c-name" value={form.name} onChange={set('name')} error={errors.name} autoComplete="name" required />
-                </Field>
-                <Field id="c-phone" label={F.phone} error={errors.phone}>
-                    <Input id="c-phone" type="tel" inputMode="tel" value={form.phone} onChange={set('phone')} error={errors.phone} autoComplete="tel" />
-                </Field>
-            </div>
-            {!compact && (
-                <Field id="c-email" label={F.email} error={errors.email}>
-                    <Input id="c-email" type="email" value={form.email} onChange={set('email')} error={errors.email} autoComplete="email" />
-                </Field>
-            )}
-            {!visit ? (
-                <>
-                    <div className="g2" style={{ gap: 12 }}>
-                        <Field id="c-city" label={`${F.location.replace(' *', '').split(' ')[0]} *`} error={errors.city}>
-                            <Input id="c-city" value={form.city} onChange={set('city')} error={errors.city} autoComplete="address-level2" required />
-                        </Field>
-                        <Field id="c-type" label={L.cdpType} error={errors.project_type}>
-                            <select id="c-type" className="f-input" value={form.project_type} onChange={(e) => set('project_type')(e.target.value)}>
-                                <option value="">—</option>
-                                {Object.entries(F.needs).map(([v, [t]]) => (
-                                    <option key={v} value={v}>{t}</option>
-                                ))}
-                            </select>
-                        </Field>
-                    </div>
-                    <Field id="c-desc" label={L.cdpDesc} error={errors.description}>
-                        <Input id="c-desc" textarea value={form.description} onChange={set('description')} error={errors.description} required />
-                    </Field>
-                    <Choices round label={L.cdpMeet} value={form.meeting_mode} onPick={set('meeting_mode')} error={errors.meeting_mode} options={Object.entries(L.meet).map(([v, t]) => [v, t])} />
-                    <UploadZone id="c-files" files={files} onChange={setFiles} label={L.cdpDocs} hint={`${campaign.documents_required ? L.cdpDocsReq : L.cdpDocsOpt} · ${F.filesHint}`} required={campaign.documents_required} />
-                    {errors.attachments && <div className="f-err" role="alert">{errors.attachments}</div>}
-                </>
-            ) : (
-                <>
-                    <Field id="c-place" label={L.cdpPlace} hint={L.cdpPlaceHint} error={errors.site_location}>
-                        <Input id="c-place" value={form.site_location} onChange={set('site_location')} error={errors.site_location} hint={L.cdpPlaceHint} required />
-                    </Field>
-                    <Field id="c-obj" label={L.cdpObjective} error={errors.objective}>
-                        <Input id="c-obj" textarea value={form.objective} onChange={set('objective')} error={errors.objective} required />
-                    </Field>
-                    <div className="g2" style={{ gap: 12 }}>
-                        <Field id="c-access" label={L.cdpAccess} error={errors.access_constraints}>
-                            <Input id="c-access" value={form.access_constraints} onChange={set('access_constraints')} error={errors.access_constraints} />
-                        </Field>
-                        <Field id="c-avail" label={L.cdpAvail} hint={L.cdpAvailHint} error={errors.availability}>
-                            <Input id="c-avail" value={form.availability} onChange={set('availability')} error={errors.availability} hint={L.cdpAvailHint} required />
-                        </Field>
-                    </div>
-                </>
-            )}
-            <Consent id="c-privacy" checked={form.privacy} onChange={set('privacy')} error={errors.privacy} />
-            <input type="text" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" style={{ position: 'absolute', left: -9999, width: 1, height: 1 }} />
-            <button type="submit" className="f-btn f-btn-primary" disabled={sending} aria-busy={sending}>
-                {sending ? F.sending : L.cdpSend[mode]}
-            </button>
-        </form>
-    );
-}

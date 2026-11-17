@@ -38,6 +38,13 @@ class HandleInertiaRequests extends Middleware
             // carry their own interface dictionary.
             'translations' => fn () => $request->routeIs('careers.*', 'en.careers.*') ? trans('site') : [],
             'site' => fn () => SiteSettings::forFrontend($locale),
+            // Footer reminder of the Coup de Pouce edition (CDC Coup de Pouce §02).
+            'cdpEdition' => function () use ($locale) {
+                $c = \App\Models\Campaign::displayed();
+                $p = $c?->toPublic($locale);
+
+                return $p && in_array($p['state'], ['open', 'waitlist', 'upcoming'], true) ? ($p['edition'] ?? null) : null;
+            },
             'seo' => fn () => Seo::get(),
             /*
              * The opening block of a fixed page, resolved from the route that

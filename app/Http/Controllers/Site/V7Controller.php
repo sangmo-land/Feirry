@@ -3,10 +3,7 @@
 namespace App\Http\Controllers\Site;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\StoreAssistanceRequest;
 use App\Http\Requests\StoreProjectRequest;
-use App\Models\AssistanceRequest;
-use App\Models\Campaign;
 use App\Models\Offer;
 use App\Models\Post;
 use App\Models\Project;
@@ -112,13 +109,6 @@ class V7Controller extends Controller
         return Inertia::render('V7/Offres', ['offers' => $this->offerList()]);
     }
 
-    public function coupDePouce(): Response
-    {
-        $this->seo('cdp');
-
-        return Inertia::render('V7/CoupDePouce', ['campaign' => $this->campaignData()]);
-    }
-
     public function conseils(): Response
     {
         $this->seo('conseils');
@@ -167,36 +157,6 @@ class V7Controller extends Controller
         return back()->with(['reference' => $quote->reference, 'success' => 'project']);
     }
 
-    public function storeCoupDePouce(StoreAssistanceRequest $request): RedirectResponse
-    {
-        $campaign = Campaign::current();
-
-        if (! $campaign) {
-            return back()->with('error', 'campaign_closed');
-        }
-
-        $data = $request->safe()->except(['attachments', 'website', 'privacy']);
-        $fingerprint = hash('sha256', mb_strtolower(implode('|', [$data['path'], $data['phone'] ?? '', $data['email'] ?? '', $data['name']])));
-        $existing = AssistanceRequest::where('fingerprint', $fingerprint)->where('created_at', '>=', now()->subMinutes(10))->first();
-
-        if ($existing) {
-            return back()->with(['reference' => $existing->reference, 'success' => 'cdp']);
-        }
-
-        $lead = AssistanceRequest::create($data + [
-            'campaign_id' => $campaign->id,
-            'locale' => app()->getLocale(),
-            'privacy_accepted_at' => now(),
-            'fingerprint' => $fingerprint,
-        ]);
-
-        $lead->update(['attachments' => LeadFiles::store($request->file('attachments', []), "leads/coup-de-pouce/{$lead->reference}")]);
-
-        LeadNotifier::send('Coup de Pouce', $lead->reference, url("/admin/assistance-requests/{$lead->id}/edit"));
-
-        return back()->with(['reference' => $lead->reference, 'success' => 'cdp']);
-    }
-
     /* ----------------------------------------------------------------- */
 
     protected function seo(string $page, ?string $preload = null, ?string $sizes = null): void
@@ -238,10 +198,6 @@ class V7Controller extends Controller
 
     protected function campaignData(): array
     {
-        $campaign = Campaign::displayed();
-
-        return $campaign
-            ? $campaign->toPublic(app()->getLocale())
-            : ['open' => false, 'starts_at' => null, 'ends_at' => null, 'capacity' => null, 'territory' => null, 'terms' => null, 'consultation' => true, 'visit' => true, 'documents_required' => false];
+        return CoupDePouceController::publicCampaign();
     }
 }

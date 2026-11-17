@@ -6,6 +6,7 @@ use App\Http\Controllers\Site\LegalController;
 use App\Http\Controllers\Site\LocaleController;
 use App\Http\Controllers\Site\NewsletterController;
 use App\Http\Controllers\Site\SitemapController;
+use App\Http\Controllers\Site\CoupDePouceController;
 use App\Http\Controllers\Site\V7Controller;
 use App\Models\Project;
 use Illuminate\Support\Facades\Route;
@@ -54,9 +55,12 @@ $site = function (string $locale) {
         ->name('projets.show')
         ->missing(fn () => redirect($to('projets'), 301));
     Route::get($path('offres'), [V7Controller::class, 'offres'])->name('offres');
-    Route::get($path('coup-de-pouce'), [V7Controller::class, 'coupDePouce'])->name('cdp');
-    Route::post($path('coup-de-pouce'), [V7Controller::class, 'storeCoupDePouce'])
-        ->middleware('throttle:5,60')
+    Route::get($path('coup-de-pouce'), [CoupDePouceController::class, 'index'])->name('cdp');
+    Route::get($path('coup-de-pouce').'/consultation', [CoupDePouceController::class, 'consultation'])->name('cdp.consultation');
+    Route::get($path('coup-de-pouce').'/visite', [CoupDePouceController::class, 'visit'])->name('cdp.visit');
+    Route::get($path('coup-de-pouce').'/confirmation', [CoupDePouceController::class, 'confirmation'])->name('cdp.confirmation');
+    Route::post($path('coup-de-pouce').'/demandes', [CoupDePouceController::class, 'store'])
+        ->middleware('throttle:8,60')
         ->name('cdp.store');
     Route::get($path('conseils'), [V7Controller::class, 'conseils'])->name('conseils');
     Route::get($path('conseils').'/{post:slug}', [BlogController::class, 'show'])

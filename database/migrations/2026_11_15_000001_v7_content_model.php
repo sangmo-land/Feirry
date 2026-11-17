@@ -83,52 +83,113 @@ return new class extends Migration
             $table->timestamps();
         });
 
+        /*
+        | Coup de Pouce FEIRRY (CDC Coup de Pouce V2, §08, §12, §16).
+        | Every value that may change lives here, never in the components.
+        */
         Schema::create('campaigns', function (Blueprint $table) {
             $table->id();
+            $table->string('slug')->unique();
             $table->string('name');
-            // draft | open | closed — only "open" inside its dates accepts requests.
+            // Edition label, also the storage folder name (e.g. 2026-fin-annee).
+            $table->string('edition');
+            // draft (préparation) | open | paused (en pause / complet) | closed (édition terminée)
             $table->string('status')->default('draft');
+            // Public launch date and intervention window; never hard-coded.
+            $table->date('announced_at')->nullable();
             $table->date('starts_at')->nullable();
             $table->date('ends_at')->nullable();
-            $table->unsignedInteger('capacity')->nullable();
-            $table->boolean('show_capacity')->default(false);
-            $table->string('territory_fr')->nullable();
-            $table->string('territory_en')->nullable();
+            // Places announced to the public, per week.
+            $table->unsignedSmallInteger('public_consultations')->nullable();
+            $table->unsignedSmallInteger('public_visits')->nullable();
+            // Internal capacity: never published.
+            $table->unsignedSmallInteger('internal_consultations')->nullable();
+            $table->unsignedSmallInteger('internal_visits')->nullable();
+            // While paused, keep the forms open as an explicit waiting list.
+            $table->boolean('waitlist')->default(false);
+            $table->string('zone_fr')->nullable();
+            $table->string('zone_en')->nullable();
+            // Pilot zone used to flag out-of-zone visit requests (comma-separated).
+            $table->string('visit_zone_keywords')->nullable();
+            $table->string('banner_fr')->nullable();
+            $table->string('banner_en')->nullable();
             $table->text('terms_fr')->nullable();
             $table->text('terms_en')->nullable();
+            $table->text('confirmation_fr')->nullable();
+            $table->text('confirmation_en')->nullable();
+            $table->string('support_whatsapp')->nullable();
             $table->boolean('consultation_enabled')->default(true);
             $table->boolean('visit_enabled')->default(true);
-            $table->boolean('documents_required')->default(false);
             $table->timestamps();
         });
 
         Schema::create('assistance_requests', function (Blueprint $table) {
             $table->id();
             $table->foreignId('campaign_id')->nullable()->constrained()->nullOnDelete();
+            // Public reference, non-sequential (CDP-26-K7Q9T3); never an access key.
             $table->string('reference')->unique();
-            // consultation | visit
+            // Client-generated key: a resent submission returns the same request.
+            $table->string('idempotency_key', 64)->nullable()->unique();
+            // consultation (fiche A) | visit (fiche B)
             $table->string('path');
+            // web | office (registered by an agent)
+            $table->string('source')->default('web');
             $table->string('name');
             $table->string('phone')->nullable();
             $table->string('email')->nullable();
             $table->string('city')->nullable();
             $table->string('project_type')->nullable();
+            // A: idee | plans | chantier | termine — B: fondations | elevation | toiture | finitions | autre
+            $table->string('progress')->nullable();
+            $table->string('land_area')->nullable();
+            $table->string('footprint_area')->nullable();
+            $table->string('levels')->nullable();
             $table->text('description')->nullable();
             // office | video (consultation)
             $table->string('meeting_mode')->nullable();
-            // visit
+            // Visit: neighbourhood + landmark only, GPS optional; never public.
             $table->string('site_location')->nullable();
-            $table->text('objective')->nullable();
+            $table->string('gps')->nullable();
             $table->text('access_constraints')->nullable();
             $table->string('availability')->nullable();
+            $table->boolean('danger_reported')->default(false);
+            $table->boolean('out_of_zone')->default(false);
             $table->json('attachments')->nullable();
             $table->string('locale', 5)->default('fr');
+            // Separate consents (CDC §15, §23): contact for the request vs. prospection.
             $table->timestamp('privacy_accepted_at')->nullable();
-            $table->string('status')->default('new');
+            $table->string('notice_version')->nullable();
+            $table->boolean('marketing_consent')->default(false);
+            $table->timestamp('marketing_consent_at')->nullable();
+            // received | incomplete | studying | waiting | scheduled | done | report_sent | closed | out_of_scope
+            $table->string('status')->default('received');
+            $table->foreignId('assigned_to')->nullable()->constrained('users')->nullOnDelete();
+            $table->text('decision_reason')->nullable();
+            $table->dateTime('scheduled_at')->nullable();
+            $table->string('scheduled_mode')->nullable();
+            $table->string('scheduled_team')->nullable();
+            $table->date('report_due_at')->nullable();
+            $table->timestamp('report_sent_at')->nullable();
+            $table->json('reports')->nullable();
             $table->text('internal_notes')->nullable();
             $table->string('fingerprint', 64)->nullable()->index();
             $table->timestamps();
-            $table->index('status');
+            $table->index(['status', 'path']);
+        });
+
+        // Who did what on a request; never a copy of the personal data itself.
+        Schema::create('assistance_audit_logs', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('assistance_request_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
+            $table->string('action');
+            $table->string('detail')->nullable();
+            $table->timestamp('created_at')->useCurrent();
+        });
+
+        Schema::table('users', function (Blueprint $table) {
+            // admin | administration | referent | communication (CDC §10)
+            $table->string('role')->default('admin')->after('email');
         });
 
         Schema::table('quote_requests', function (Blueprint $table) {
@@ -153,6 +214,8 @@ return new class extends Migration
         Schema::table('quote_requests', function (Blueprint $table) {
             $table->dropColumn(['need', 'offer', 'programme', 'phase', 'land_status', 'size', 'contact_preference', 'attachments', 'locale', 'privacy_accepted_at', 'fingerprint']);
         });
+        Schema::table('users', fn (Blueprint $table) => $table->dropColumn('role'));
+        Schema::dropIfExists('assistance_audit_logs');
         Schema::dropIfExists('assistance_requests');
         Schema::dropIfExists('campaigns');
         Schema::dropIfExists('offers');

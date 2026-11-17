@@ -27,11 +27,21 @@ class LeadFileController extends Controller
 
         $lead = match ($type) {
             'quote' => QuoteRequest::findOrFail($id),
-            'assistance' => AssistanceRequest::findOrFail($id),
+            'assistance', 'assistance-report' => AssistanceRequest::findOrFail($id),
             default => abort(404),
         };
 
-        $file = ($lead->attachments ?? [])[$index] ?? abort(404);
+        if ($lead instanceof AssistanceRequest) {
+            // Role checked on every download (CDC Coup de Pouce §22).
+            abort_unless(method_exists($user, 'canSeeAssistanceRequest') && $user->canSeeAssistanceRequest($lead), 403);
+        }
+
+        $list = $type === 'assistance-report' ? ($lead->reports ?? []) : ($lead->attachments ?? []);
+        $file = $list[$index] ?? abort(404);
+
+        if ($lead instanceof AssistanceRequest) {
+            $lead->log('download', ($type === 'assistance-report' ? 'Rapport téléchargé : ' : 'Pièce téléchargée : ').($file['name'] ?? 'document'));
+        }
         abort_unless(Storage::disk('local')->exists($file['path']), 404);
 
         return Storage::disk('local')->download($file['path'], $file['name'] ?? basename($file['path']));

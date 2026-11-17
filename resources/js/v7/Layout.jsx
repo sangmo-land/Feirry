@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { A, Dialog, Icon, ThemeProvider, useTheme, useV7, waLink } from './core';
+import { CDP } from './cdp-i18n';
 
 const NAV = [
     ['/', 'home'],
@@ -148,7 +149,8 @@ function Drawer({ open, onClose }) {
 }
 
 function Footer() {
-    const { L, site } = useV7();
+    const { L, site, locale } = useV7();
+    const { cdpEdition } = usePage().props;
     const c = site.contact ?? {};
     const legal = site.legal ?? {};
     const year = new Date().getFullYear();
@@ -191,6 +193,8 @@ function Footer() {
                     <h2 style={{ color: 'var(--v-text)', fontWeight: 700, margin: '0 0 6px', fontSize: 14, fontFamily: 'Manrope, sans-serif' }}>{L.ft.company}</h2>
                     {legal.rccm && <>{legal.rccm}<br /></>}
                     {legal.niu && <>NIU {legal.niu}<br /></>}
+                    <A href="/coup-de-pouce" style={{ color: 'var(--v-text)', fontWeight: 700 }}>{CDP[locale]?.footer ?? CDP.fr.footer}</A>
+                    {cdpEdition && <span style={{ display: 'block', fontSize: 13 }}>{cdpEdition}</span>}
                     <A href="/mentions-legales" style={{ color: 'var(--v-muted)' }}>{L.ft.legal}</A>
                     {' · '}
                     <A href="/confidentialite" style={{ color: 'var(--v-muted)' }}>{L.ft.privacy}</A>

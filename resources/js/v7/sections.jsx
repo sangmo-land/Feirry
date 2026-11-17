@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { A, CheckList, CloseButton, Dialog, Icon, Img, Media, RoleBadges, SectionHead, formatDate, rolesText, stageText, useV7, waLink } from './core';
-import { CdpForm, ProjectWizard } from './forms';
+import { ProjectWizard } from './forms';
 
 const img = (name) => `/storage/v7/${name}-1280.webp`;
 
@@ -449,60 +449,8 @@ export function Offers({ offers, page = false }) {
 }
 
 /* 08 — COUP DE POUCE */
-export function CdpInfo({ campaign }) {
-    const { L, locale } = useV7();
-    const rows = [
-        [L.cdpInfo.next, campaign.starts_at ? `${L.cdpInfo.from} ${formatDate(campaign.starts_at, locale)}${campaign.ends_at ? ` ${L.cdpInfo.to} ${formatDate(campaign.ends_at, locale)}` : ''}` : L.cdpInfo.announce],
-        [L.cdpInfo.places, campaign.capacity ?? L.cdpInfo.announce],
-        [L.cdpInfo.terms, campaign.terms ? '✓' : L.cdpInfo.writing],
-    ];
-    if (campaign.territory) rows.splice(2, 0, [L.cdpInfo.territory, campaign.territory]);
-    return (
-        <dl style={{ margin: '24px 0 0' }}>
-            {rows.map(([k, v]) => (
-                <div key={k} style={{ display: 'flex', justifyContent: 'space-between', gap: 16, padding: '12px 0', borderTop: '1px solid var(--v-line)' }}>
-                    <dt className="f-muted" style={{ fontSize: 14 }}>{k}</dt>
-                    <dd style={{ margin: 0, fontWeight: 700, fontSize: 14, textAlign: 'right' }}>{v}</dd>
-                </div>
-            ))}
-        </dl>
-    );
-}
+export { CdpHomeBlock as CoupDePouce } from './cdp';
 
-export function CoupDePouce({ campaign, page = false }) {
-    const { L } = useV7();
-    const H = page ? 'h1' : 'h2';
-    return (
-        <section id="coup-de-pouce" className="f-sec f-wrap" aria-labelledby="s-cdp" style={page ? { paddingTop: 40 } : undefined}>
-            <div className="f-card f-pad" style={{ padding: 48, background: 'var(--v-cdp-bg)', border: '1px solid rgba(254,80,0,.45)' }}>
-                <div className="split" style={{ alignItems: 'start' }}>
-                    <div>
-                        <div className="chips">
-                            <span style={{ flex: 'none', padding: '6px 12px', borderRadius: 999, background: campaign.open ? '#01B27C' : '#FE5000', color: '#0B090B', fontSize: 12, fontWeight: 800, letterSpacing: '.06em' }}>{campaign.open ? L.open : L.soon}</span>
-                            <span className="f-eye" style={{ flex: 'none', alignSelf: 'center', color: 'var(--v-muted)' }}>{L.s8eye}</span>
-                        </div>
-                        <H className="f-h2" id="s-cdp" style={{ marginTop: 16 }}>
-                            Coup de Pouce <span style={{ color: '#FE5000' }}>FEIRRY</span>
-                        </H>
-                        <p className="f-lead" style={{ marginTop: 20, maxWidth: 520 }}>{L.s8lead}</p>
-                        <CdpInfo campaign={campaign} />
-                        {!page && (
-                            <A className="f-textbtn" href="/coup-de-pouce" style={{ marginTop: 12 }}>
-                                {L.cdpMore}
-                                <Icon name="arrow" size={16} stroke={2.2} />
-                            </A>
-                        )}
-                    </div>
-                    <div>
-                        <CdpForm campaign={campaign} compact={!page} />
-                    </div>
-                </div>
-            </div>
-        </section>
-    );
-}
-
-/* 09 — À L'ÉTRANGER */
 export function Abroad() {
     const { L, site } = useV7();
     return (

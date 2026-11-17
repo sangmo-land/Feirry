@@ -13,7 +13,8 @@ Branche : `v7-refonte`. Référence : cahier des charges V7 (12 nov. 2026), maqu
 
 ```bash
 git fetch origin
-git checkout main && git merge --ff-only origin/v7-refonte   # ou déployer la branche
+git checkout main && git merge --no-edit origin/v7-refonte   # main contient un commit de test (public/deploy-probe.txt)
+git rm -q --ignore-unmatch public/deploy-probe.txt   # ou déployer la branche
 composer install --no-dev --optimize-autoloader
 composer deploy        # migrate --force + caches
 ```

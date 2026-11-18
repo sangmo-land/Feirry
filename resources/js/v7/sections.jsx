@@ -588,6 +588,14 @@ export function FindUs() {
                     <address style={{ fontStyle: 'normal', fontSize: 16, lineHeight: 1.6 }}>
                         {c.address}, {c.city}, {F.country}
                     </address>
+                    {c.hours && (
+                        <div>
+                            <strong style={{ display: 'block', fontSize: 13, letterSpacing: '.08em', textTransform: 'uppercase', color: 'var(--v-muted)' }}>{F.hours}</strong>
+                            {String(c.hours).split(' · ').map((line) => (
+                                <span key={line} style={{ display: 'block', fontSize: 16, lineHeight: 1.6 }}>{line}</span>
+                            ))}
+                        </div>
+                    )}
                     <p className="f-muted" style={{ margin: 0, lineHeight: 1.6 }}>{F.reach}</p>
                     {c.secondary_presence && <p className="f-muted" style={{ margin: 0 }}>{F.also} {c.secondary_presence}.</p>}
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginTop: 'auto', paddingTop: 10 }}>

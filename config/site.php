@@ -40,10 +40,15 @@ return [
         'email' => 'contact@feirry.org',
         'email_rh' => 'contact@feirry.org',
         'email_devis' => 'contact@feirry.org',
-        // Opening hours not yet confirmed by FEIRRY: hidden until set in the admin.
-        'hours_fr' => null,
-        'hours_en' => null,
-        'opening_hours' => [],
+        // Opening hours given by FEIRRY's management on 18/11/2026. The two
+        // sentences can be changed in the admin; `opening_hours` is the same
+        // information for search engines and must be kept in step with them.
+        'hours_fr' => 'Lundi – vendredi : 8h – 17h · Samedi : 9h – 13h',
+        'hours_en' => 'Monday – Friday: 8 am – 5 pm · Saturday: 9 am – 1 pm',
+        'opening_hours' => [
+            ['days' => ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'], 'opens' => '08:00', 'closes' => '17:00'],
+            ['days' => ['Saturday'], 'opens' => '09:00', 'closes' => '13:00'],
+        ],
         'maps_url' => null,
         'latitude' => null,
         'longitude' => null,

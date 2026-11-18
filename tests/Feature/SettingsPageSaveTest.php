@@ -62,4 +62,26 @@ class SettingsPageSaveTest extends TestCase
         $this->assertStringContainsString('"@type":"GeoCoordinates","latitude":4.05,"longitude":9.7', $html);
         $this->assertStringContainsString('frame-src https://www.openstreetmap.org', $this->get('/mon-projet')->headers->get('Content-Security-Policy'));
     }
+
+    /* Horaires communiqués par la direction le 18/11/2026 : lundi–vendredi 8h–17h, samedi 9h–13h. */
+    public function test_opening_hours_reach_the_page_in_both_languages_and_the_structured_data(): void
+    {
+        $html = $this->get('/mon-projet')->assertOk()->assertInertia(fn ($page) => $page
+            ->where('site.contact.hours', 'Lundi – vendredi : 8h – 17h · Samedi : 9h – 13h'))->getContent();
+
+        $this->get('/en/my-project')->assertOk()->assertInertia(fn ($page) => $page
+            ->where('site.contact.hours', 'Monday – Friday: 8 am – 5 pm · Saturday: 9 am – 1 pm'));
+
+        $this->assertStringContainsString('"opens":"08:00","closes":"17:00"', $html);
+        $this->assertStringContainsString('"dayOfWeek":["Saturday"],"opens":"09:00","closes":"13:00"', $html);
+        $this->assertStringNotContainsString('Sunday', $html);
+    }
+
+    public function test_hours_changed_in_the_admin_replace_the_default_sentence(): void
+    {
+        Setting::put('contact.hours_fr', 'Lundi – vendredi : 8h – 16h', 'contact');
+
+        $this->get('/mon-projet')->assertOk()->assertInertia(fn ($page) => $page
+            ->where('site.contact.hours', 'Lundi – vendredi : 8h – 16h'));
+    }
 }

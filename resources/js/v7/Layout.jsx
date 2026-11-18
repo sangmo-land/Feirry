@@ -177,6 +177,9 @@ function Footer() {
                     {L.ft.office1}
                     <br />
                     {L.ft.office2}
+                    {c.hours && String(c.hours).split(' · ').map((line) => (
+                        <span key={line} style={{ display: 'block' }}>{line}</span>
+                    ))}
                 </div>
                 <div>
                     <h2 style={{ color: 'var(--v-text)', fontWeight: 700, margin: '0 0 6px', fontSize: 14, fontFamily: 'Manrope, sans-serif' }}>Contact</h2>

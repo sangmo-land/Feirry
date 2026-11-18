@@ -37,9 +37,9 @@ return [
         'phone_secondary' => '+237 696 645 970',
         'phone_secondary_label' => 'Orange',
         'whatsapp' => '237670729579',
-        'email' => 'contact@feirry.co',
-        'email_rh' => 'contact@feirry.co',
-        'email_devis' => 'contact@feirry.co',
+        'email' => 'contact@feirry.org',
+        'email_rh' => 'contact@feirry.org',
+        'email_devis' => 'contact@feirry.org',
         // Opening hours not yet confirmed by FEIRRY: hidden until set in the admin.
         'hours_fr' => null,
         'hours_en' => null,

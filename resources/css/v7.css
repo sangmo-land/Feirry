@@ -235,3 +235,4 @@ textarea.f-input { height: auto; min-height: 104px; padding: 14px 16px; resize: 
     .f-pad { padding: 22px !important; }
     .f-lang button { width: 38px !important; }
 }
+.f-choice:disabled:hover { border-color: var(--v-line-strong); }

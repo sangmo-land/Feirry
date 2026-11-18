@@ -35,6 +35,7 @@ class SecurityTest extends TestCase
     private function openCampaign(): void
     {
         Campaign::first()->update(['status' => 'open', 'announced_at' => now()->subDay(), 'starts_at' => now()->subDay(), 'ends_at' => now()->addMonth()]);
+        config(['site.cdp.slots.consultation' => null, 'site.cdp.slots.visit' => null]);
     }
 
     public function test_security_headers_and_strict_csp_on_public_pages(): void

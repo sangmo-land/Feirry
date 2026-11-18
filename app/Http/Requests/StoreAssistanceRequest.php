@@ -53,6 +53,8 @@ class StoreAssistanceRequest extends FormRequest
             'name' => ['required', 'string', 'min:2', 'max:120'],
             'phone' => ['required', 'string', 'max:30', 'regex:/^(?=(?:\D*\d){9,15}\D*$)[0-9+().\s-]+$/'],
             'email' => ['nullable', 'email:rfc', 'max:180'],
+            // Booked slot, Douala time. Whether one is required is decided against the live grid.
+            'slot' => ['nullable', 'date_format:Y-m-d H:i'],
             'privacy' => ['accepted'],
             'marketing' => ['nullable', 'boolean'],
             'website' => ['prohibited'],

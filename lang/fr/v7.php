@@ -31,6 +31,9 @@ return [
         'idempotency_key' => 'clé d’envoi',
     ],
     'errors' => [
+        'slot_required' => 'Choisissez un créneau pour votre rendez-vous.',
+        'slot_taken' => 'Ce créneau vient d’être réservé. Choisissez-en un autre.',
+        'slot_week_full' => 'Cette semaine est complète. Choisissez un créneau une autre semaine.',
         'file_type' => 'Ce fichier n’est pas pris en charge. Formats acceptés : PDF pour les plans ; JPG, PNG ou WebP pour les photos.',
         'file_size' => 'Ce fichier dépasse la taille autorisée. Vous pouvez poursuivre sans pièce et l’envoyer plus tard.',
         'phone' => 'Indiquez un numéro valide (au moins 9 chiffres).',

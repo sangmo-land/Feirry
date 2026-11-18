@@ -251,13 +251,62 @@ export function CdpPage({ campaign }) {
 const EMPTY = {
     city: '', project_type: '', progress: '', land_area: '', land_unknown: false, footprint_area: '', footprint_unknown: false, levels: '',
     description: '', site_location: '', gps: '', availability: '', access_constraints: '', danger: false,
-    name: '', phone: '', email: '', meeting_mode: '', privacy: false, marketing: false,
+    name: '', phone: '', email: '', meeting_mode: '', slot: '', privacy: false, marketing: false,
 };
 
 const STEP1 = ['city', 'project_type', 'progress', 'land_area', 'footprint_area', 'levels', 'description', 'site_location', 'gps', 'availability', 'danger'];
 
-export function CdpForm({ path, campaign, limits }) {
-    const { C, L, path: lp } = useCdp();
+/* Slots are Douala wall-clock times: formatted from their parts, never through the visitor's time zone. */
+const slotDate = (iso, locale, opts) => {
+    const [y, m, d] = iso.slice(0, 10).split('-').map(Number);
+    return new Date(y, m - 1, d).toLocaleDateString(locale === 'en' ? 'en-GB' : 'fr-FR', opts);
+};
+const slotTime = (hm, locale) => (locale === 'en' ? hm : `${Number(hm.slice(0, 2))} h ${hm.slice(3)}`);
+
+/** Day then time. Taken slots stay visible but cannot be chosen; never a count. */
+function SlotPicker({ slots, value, onPick, error, F, hint, locale }) {
+    const [day, setDay] = useState(value ? value.slice(0, 10) : '');
+    useEffect(() => {
+        if (value) setDay(value.slice(0, 10));
+    }, [value]);
+    const current = slots.find((d) => d.date === day);
+    return (
+        <fieldset data-invalid={error ? '' : undefined} style={{ border: 0, padding: 0, margin: 0, minWidth: 0 }} aria-describedby="cdp-slot-hint">
+            <legend style={{ padding: 0, fontSize: 14, fontWeight: 700, marginBottom: 6 }}>{F.slotLabel} *</legend>
+            <p id="cdp-slot-hint" className="f-muted" style={{ margin: '0 0 10px', fontSize: 13 }}>{hint}</p>
+            <div className="f-muted" style={{ fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.08em', marginBottom: 6 }}>{F.slotDay}</div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                {slots.map((d) => {
+                    const full = !d.times.some((t) => t.free);
+                    return (
+                        <button key={d.date} type="button" className="f-choice round" aria-pressed={day === d.date} disabled={full} style={full ? { opacity: 0.5, cursor: 'not-allowed' } : undefined}
+                            onClick={() => { setDay(d.date); if (value && value.slice(0, 10) !== d.date) onPick(''); }}>
+                            {slotDate(d.date, locale, { weekday: 'short', day: 'numeric', month: 'short' })}{full ? ` · ${F.slotFull}` : ''}
+                        </button>
+                    );
+                })}
+            </div>
+            {current && (
+                <>
+                    <div className="f-muted" style={{ fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.08em', margin: '14px 0 6px' }}>{F.slotTime}</div>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                        {current.times.map((t) => (
+                            <button key={t.value} type="button" className="f-choice round" aria-pressed={value === t.value} disabled={!t.free} style={!t.free ? { opacity: 0.45, cursor: 'not-allowed', textDecoration: 'line-through' } : undefined}
+                                aria-label={t.free ? undefined : `${slotTime(t.time, locale)}, ${F.slotTaken}`} onClick={() => onPick(value === t.value ? '' : t.value)}>
+                                {slotTime(t.time, locale)}
+                            </button>
+                        ))}
+                    </div>
+                </>
+            )}
+            <p className="f-muted" style={{ margin: '10px 0 0', fontSize: 13 }}>{F.slotNote}</p>
+            {error && <div className="f-err" role="alert" style={{ marginTop: 6 }}>{error}</div>}
+        </fieldset>
+    );
+}
+
+export function CdpForm({ path, campaign, limits, slots = [] }) {
+    const { C, L, path: lp, locale } = useCdp();
     const F = C.form;
     const visit = path === 'visit';
     const store = `feirry-cdp-${path}`;
@@ -317,6 +366,14 @@ export function CdpForm({ path, campaign, limits }) {
             (el ?? top.current)?.focus();
         }, 30);
 
+    // Automatic booking: a slot is asked for as long as one is free.
+    const hasGrid = slots.length > 0;
+    const canBook = slots.some((d) => d.times.some((t) => t.free));
+    // The grid is refreshed after a refused booking: drop a choice that is no longer free.
+    useEffect(() => {
+        if (form.slot && !slots.some((d) => d.times.some((t) => t.value === form.slot && t.free))) setForm((f) => ({ ...f, slot: '' }));
+    }, [slots]); // eslint-disable-line react-hooks/exhaustive-deps
+
     const outOfZone = visit && form.city.trim().length > 2 && !/douala/i.test(`${form.city} ${form.site_location}`);
 
     const validate1 = () => {
@@ -339,6 +396,7 @@ export function CdpForm({ path, campaign, limits }) {
         if (form.name.trim().length < 2) e.name = F.errRequired;
         if (digits(form.phone) < 9 || digits(form.phone) > 15) e.phone = F.errPhone;
         if (form.email.trim() && !emailOk(form.email.trim())) e.email = F.errEmail;
+        if (canBook && !form.slot) e.slot = F.errSlot;
         if (!form.privacy) e.privacy = F.errPrivacy;
         setErrors(e);
         return !Object.keys(e).length;
@@ -375,6 +433,7 @@ export function CdpForm({ path, campaign, limits }) {
         else Object.assign(data, { land_area: area(form.land_area, form.land_unknown), footprint_area: area(form.footprint_area, form.footprint_unknown), levels: form.levels, meeting_mode: form.meeting_mode });
         if (!visit && !form.land_unknown && form.land_area === '') delete data.land_area;
         if (!visit && !form.footprint_unknown && form.footprint_area === '') delete data.footprint_area;
+        if (canBook) data.slot = form.slot;
         files.forEach((f, i) => (data[`attachments[${i}]`] = f));
 
         router.post(lp('/coup-de-pouce/demandes'), data, {
@@ -507,9 +566,11 @@ export function CdpForm({ path, campaign, limits }) {
                             </Field>
                             {visit && (
                                 <>
-                                    <Field id="cdp-avail" label={F.availability} hint={F.availabilityHint} error={errors.availability}>
-                                        <Input id="cdp-avail" value={form.availability} onChange={set('availability')} error={errors.availability} hint={F.availabilityHint} />
-                                    </Field>
+                                    {!canBook && (
+                                        <Field id="cdp-avail" label={F.availability} hint={F.availabilityHint} error={errors.availability}>
+                                            <Input id="cdp-avail" value={form.availability} onChange={set('availability')} error={errors.availability} hint={F.availabilityHint} />
+                                        </Field>
+                                    )}
                                     <label className="f-check" htmlFor="cdp-danger">
                                         <input id="cdp-danger" type="checkbox" checked={form.danger} onChange={(e) => set('danger')(e.target.checked)} />
                                         <span>{F.danger}</span>
@@ -526,6 +587,8 @@ export function CdpForm({ path, campaign, limits }) {
 
                     {step === 2 && (
                         <>
+                            {canBook && <SlotPicker slots={slots} value={form.slot} onPick={set('slot')} error={errors.slot} F={F} hint={F.slotHint[path]} locale={locale} />}
+                            {hasGrid && !canBook && <p role="note" style={{ margin: 0, padding: '12px 14px', borderRadius: 14, border: '1px solid var(--v-line-strong)', lineHeight: 1.55 }}>{F.slotsNone}</p>}
                             <Field id="cdp-name" label={`${F.name} *`} error={errors.name}>
                                 <Input id="cdp-name" value={form.name} onChange={set('name')} error={errors.name} autoComplete="name" required />
                             </Field>
@@ -601,8 +664,8 @@ export function CdpForm({ path, campaign, limits }) {
 /* Confirmation — only after the server stored the request (CDC §09)   */
 /* ------------------------------------------------------------------ */
 
-export function CdpConfirmation({ reference, message, waiting = false }) {
-    const { C } = useCdp();
+export function CdpConfirmation({ reference, message, waiting = false, slot = null, mode = null }) {
+    const { C, locale } = useCdp();
     const [copied, setCopied] = useState(false);
     const box = useRef(null);
     useEffect(() => box.current?.focus(), []);
@@ -619,13 +682,23 @@ export function CdpConfirmation({ reference, message, waiting = false }) {
             <div style={{ width: 64, height: 64, borderRadius: 999, background: 'rgba(1,178,124,.16)', color: '#01B27C', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <Icon name="check" size={30} stroke={2.4} />
             </div>
-            <div className="f-eye" style={{ marginTop: 20, color: '#01B27C' }}>{C.confirm.eyebrow}</div>
-            <h1 style={{ margin: '10px 0 0', fontSize: 'clamp(26px, 4vw, 36px)' }}>{C.confirm.title}</h1>
+            <div className="f-eye" style={{ marginTop: 20, color: '#01B27C' }}>{slot ? C.confirm.bookedEyebrow : C.confirm.eyebrow}</div>
+            <h1 style={{ margin: '10px 0 0', fontSize: 'clamp(26px, 4vw, 36px)' }}>{slot ? C.confirm.bookedTitle : C.confirm.title}</h1>
             <p style={{ margin: '18px 0 0', fontSize: 18 }}>
                 {C.confirm.ref}{' '}: <strong className="f-accent" style={{ fontFamily: "'Clash Display', sans-serif", letterSpacing: '.04em' }}>{reference}</strong>
             </p>
+            {slot && (
+                <p style={{ margin: '14px 0 0', padding: '14px 16px', borderRadius: 14, border: '1.5px solid #01B27C', lineHeight: 1.6 }}>
+                    <span className="f-muted" style={{ display: 'block', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.08em' }}>{C.confirm.bookedLabel}</span>
+                    <strong style={{ fontSize: 18 }}>
+                        {slotDate(slot, locale, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })} {C.confirm.at} {slotTime(slot.slice(11, 16), locale)}
+                    </strong>{' '}
+                    <span className="f-muted">({C.confirm.tz})</span>
+                    {C.confirm.where[mode] && <span style={{ display: 'block' }}>{C.confirm.where[mode]}</span>}
+                </p>
+            )}
             {waiting && <p style={{ margin: '14px 0 0', lineHeight: 1.65, fontWeight: 700 }}>{C.confirm.waiting}</p>}
-            <p className="f-muted" style={{ margin: '14px 0 0', lineHeight: 1.65 }}>{message || C.confirm.text}</p>
+            <p className="f-muted" style={{ margin: '14px 0 0', lineHeight: 1.65 }}>{slot ? C.confirm.bookedText : message || C.confirm.text}</p>
             <p className="f-muted" style={{ margin: '10px 0 0', fontSize: 14 }}>{C.confirm.keep}</p>
             <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 26 }}>
                 <button type="button" className="f-btn f-btn-primary f-btn-inline" onClick={copy}>{copied ? C.confirm.copied : C.confirm.copy}</button>

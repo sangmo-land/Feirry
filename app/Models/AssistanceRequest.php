@@ -66,6 +66,14 @@ class AssistanceRequest extends Model
                 }
             }
 
+            // A request set aside gives its slot and its seat back to the public grid;
+            // a meeting moved by hand frees the slot it was booked on (CAMP-02).
+            if ($request->isDirty('status') && $request->status === 'out_of_scope') {
+                $request->slot_key = null;
+                $request->seat_key = null;
+            } elseif ($request->isDirty('scheduled_at') && $request->slot_key) {
+                $request->slot_key = null;
+            }
             foreach (['assigned_to' => 'Affectation modifiée', 'scheduled_at' => 'Rendez-vous modifié', 'decision_reason' => 'Motif de décision saisi'] as $field => $label) {
                 if ($request->isDirty($field)) {
                     $request->log('update', $label);

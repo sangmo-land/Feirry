@@ -7,12 +7,15 @@ use App\Http\Requests\StoreAssistanceRequest;
 use App\Mail\AssistanceReceivedMail;
 use App\Models\AssistanceRequest;
 use App\Models\Campaign;
+use App\Support\CdpSlots;
 use App\Support\Seo;
 use App\Support\V7\LeadNotifier;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -45,6 +48,8 @@ class CoupDePouceController extends Controller
         return Inertia::render('V7/CoupDePouceForm', [
             'path' => $path,
             'campaign' => $campaign,
+            // Days and times that can be booked; free or taken, never a count.
+            'slots' => ($live = Campaign::current()) && $live->publicState() === 'open' ? CdpSlots::publicList($live, $path) : [],
             'limits' => [
                 'pdf_max_files' => config('site.cdp.pdf_max_files'),
                 'pdf_max_mb' => (int) round(config('site.cdp.pdf_max_kb') / 1024),
@@ -85,7 +90,19 @@ class CoupDePouceController extends Controller
 
         $visit = $data['path'] === 'visit';
 
-        $lead = AssistanceRequest::create([
+        // Automatic booking (CAMP-02): while a slot is free, one must be chosen
+        // and it is final. When every slot is taken the request goes to the
+        // waiting list instead.
+        $slot = $data['slot'] ?? null;
+        // No grid (slots not configured, or all in the past): requests are handled by hand, as before.
+        $hasGrid = $campaign->publicState() === 'open' && (bool) CdpSlots::grid($campaign, $data['path']);
+        $bookable = $hasGrid && CdpSlots::anyFree($campaign, $data['path']);
+        if ($bookable && (! $slot || ! CdpSlots::isBookable($campaign, $data['path'], $slot))) {
+            throw ValidationException::withMessages(['slot' => __($slot ? 'v7.errors.slot_taken' : 'v7.errors.slot_required')]);
+        }
+        $at = $bookable ? CdpSlots::parse($slot) : null;
+
+        $attributes = [
             'campaign_id' => $campaign->id,
             'idempotency_key' => $data['idempotency_key'],
             'path' => $data['path'],
@@ -112,9 +129,19 @@ class CoupDePouceController extends Controller
             'notice_version' => config('site.cdp.notice_version'),
             'marketing_consent' => ! empty($data['marketing']),
             'marketing_consent_at' => ! empty($data['marketing']) ? now() : null,
-            // Requests sent while the edition is full go straight to the waiting list (CDC §05, §09).
-            'status' => $campaign->publicState() === 'waitlist' ? 'waiting' : 'received',
-        ]);
+            // Booked → scheduled. Every slot taken, or edition on its waiting list → waiting list.
+            'status' => $at ? 'scheduled' : ($hasGrid || $campaign->publicState() === 'waitlist' ? 'waiting' : 'received'),
+        ];
+
+        if ($at) {
+            $attributes += [
+                'scheduled_at' => $at,
+                'scheduled_mode' => $visit ? 'site' : (($data['meeting_mode'] ?? null) ?: 'office'),
+                'slot_key' => CdpSlots::slotKey($campaign, $data['path'], $slot),
+            ];
+        }
+
+        $lead = $this->book($attributes, $campaign, $at);
 
         $lead->update(['attachments' => $this->storeFiles($request->file('attachments', []), $lead)]);
 
@@ -147,14 +174,52 @@ class CoupDePouceController extends Controller
             'path' => $done['path'],
             'message' => static::publicCampaign()['confirmation'] ?? null,
             'waiting' => (bool) ($done['waiting'] ?? false),
+            'slot' => $done['slot'] ?? null,
+            'mode' => $done['mode'] ?? null,
         ]);
     }
 
     /* ----------------------------------------------------------------- */
 
+    /**
+     * Writes the request. With a slot, takes the first free numbered seat of
+     * that week: the unique indexes on slot_key and seat_key refuse a second
+     * request for the same slot, or one beyond the weekly quota, even when two
+     * people send at the same instant.
+     */
+    protected function book(array $attributes, Campaign $campaign, ?\Carbon\CarbonImmutable $at): AssistanceRequest
+    {
+        if (! isset($attributes['slot_key'])) {
+            return AssistanceRequest::create($attributes);
+        }
+
+        for ($seat = 1, $quota = CdpSlots::quota($campaign, $attributes['path']); $seat <= $quota; $seat++) {
+            try {
+                return AssistanceRequest::create($attributes + ['seat_key' => CdpSlots::seatKey($campaign, $attributes['path'], $at, $seat)]);
+            } catch (UniqueConstraintViolationException $e) {
+                // A resend of the same form that crossed this one: hand back the stored request.
+                if ($same = AssistanceRequest::where('idempotency_key', $attributes['idempotency_key'])->first()) {
+                    return $same;
+                }
+                if (AssistanceRequest::where('slot_key', $attributes['slot_key'])->exists()) {
+                    throw ValidationException::withMessages(['slot' => __('v7.errors.slot_taken')]);
+                }
+                // Otherwise that seat was just taken: try the next one.
+            }
+        }
+
+        throw ValidationException::withMessages(['slot' => __('v7.errors.slot_week_full')]);
+    }
+
     protected function confirm(AssistanceRequest $lead): RedirectResponse
     {
-        session()->flash('cdp_done', ['reference' => $lead->reference, 'path' => $lead->path, 'waiting' => $lead->status === 'waiting']);
+        session()->flash('cdp_done', [
+            'reference' => $lead->reference,
+            'path' => $lead->path,
+            'waiting' => $lead->status === 'waiting',
+            'slot' => $lead->slot_key ? $lead->scheduled_at?->format('Y-m-d\TH:i') : null,
+            'mode' => $lead->slot_key ? $lead->scheduled_mode : null,
+        ]);
 
         return redirect(\App\Support\LocalePath::to('/coup-de-pouce/confirmation', app()->getLocale()));
     }

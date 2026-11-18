@@ -541,10 +541,98 @@ export function ContactDetails() {
     );
 }
 
-export function Contact({ offers, preset, page = false }) {
-    const { L } = useV7();
+/**
+ * « Où nous trouver ? » (additif Contact, 18/11/2026).
+ *
+ * Shown only once FEIRRY has saved the exact GPS point of the head office in
+ * the admin: no approximate or invented position is ever published. The map
+ * is loaded on request (performance, and no third-party call before the
+ * visitor asks). The page never asks for the visitor's own location: the
+ * directions link hands over to Google Maps, in a new tab so that nothing
+ * typed in the form is lost.
+ */
+export function officePoint(contact) {
+    const lat = Number.parseFloat(contact?.latitude);
+    const lng = Number.parseFloat(contact?.longitude);
+    const given = String(contact?.latitude ?? '').trim() !== '' && String(contact?.longitude ?? '').trim() !== '';
+    return given && Number.isFinite(lat) && Number.isFinite(lng) && Math.abs(lat) <= 90 && Math.abs(lng) <= 180 ? { lat, lng } : null;
+}
+
+export function FindUs() {
+    const { L, site } = useV7();
+    const [map, setMap] = useState(false);
+    const c = site.contact ?? {};
+    const point = officePoint(c);
+    if (!point) return null;
+
+    const F = L.find;
+    const at = `${point.lat},${point.lng}`;
+    const route = `https://www.google.com/maps/dir/?api=1&destination=${at}`;
+    const place = c.maps_url || `https://www.google.com/maps/search/?api=1&query=${at}`;
+    const d = 0.0045;
+    const embed = `https://www.openstreetmap.org/export/embed.html?bbox=${point.lng - d},${point.lat - d * 0.62},${point.lng + d},${point.lat + d * 0.62}&layer=mapnik&marker=${at}`;
+    const ext = { target: '_blank', rel: 'noopener noreferrer' };
+
     return (
-        <section id="contact" className="f-sec f-wrap" aria-labelledby="s-contact" style={{ paddingBottom: 112, paddingTop: page ? 40 : undefined }}>
+        <section id="localisation" className="f-sec f-wrap" aria-labelledby="s-find" style={{ paddingTop: 0, paddingBottom: 112 }}>
+            <div className="f-head">
+                <div style={{ maxWidth: 760 }}>
+                    <h2 className="f-h2 f-h2s" id="s-find">{F.title}</h2>
+                    <p className="f-lead" style={{ marginTop: 16 }}>{F.lead}</p>
+                </div>
+            </div>
+            <div className="split" style={{ alignItems: 'stretch' }}>
+                <div className="f-card f-panel f-pad" style={{ padding: 32, display: 'flex', flexDirection: 'column', gap: 14 }}>
+                    <span className="f-badge" style={{ alignSelf: 'flex-start', background: '#FE5000', color: '#0B090B' }}>{F.badge}</span>
+                    <h3 style={{ margin: 0, fontSize: 26 }}>{F.place}</h3>
+                    <address style={{ fontStyle: 'normal', fontSize: 16, lineHeight: 1.6 }}>
+                        {c.address}, {c.city}, {F.country}
+                    </address>
+                    <p className="f-muted" style={{ margin: 0, lineHeight: 1.6 }}>{F.reach}</p>
+                    {c.secondary_presence && <p className="f-muted" style={{ margin: 0 }}>{F.also} {c.secondary_presence}.</p>}
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginTop: 'auto', paddingTop: 10 }}>
+                        <a className="f-btn f-btn-primary" href={route} {...ext}>
+                            <Icon name="nav" size={18} stroke={2.2} />
+                            {F.route}
+                            <span className="sr-only"> {F.newTab}</span>
+                        </a>
+                        <a className="f-btn f-btn-ghost" href={place} {...ext}>
+                            {F.open}
+                            <span className="sr-only"> {F.newTab}</span>
+                        </a>
+                    </div>
+                    <p className="f-muted" style={{ margin: 0, fontSize: 13, lineHeight: 1.55 }}>{F.routeNote}</p>
+                </div>
+                <div>
+                    <div className="f-card f-media" style={{ position: 'relative', minHeight: 380, height: '100%', border: '1px solid var(--v-line)', background: 'var(--v-surface)' }}>
+                        {map ? (
+                            <iframe title={F.mapTitle} src={embed} loading="lazy" referrerPolicy="no-referrer" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 0 }} />
+                        ) : (
+                            <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 14, padding: 24, textAlign: 'center', backgroundImage: 'linear-gradient(var(--v-line) 1px, transparent 1px), linear-gradient(90deg, var(--v-line) 1px, transparent 1px)', backgroundSize: '44px 44px' }}>
+                                <span className="f-icon-tile" style={{ width: 56, height: 56, borderRadius: 999, background: '#FE5000', color: '#0B090B' }}>
+                                    <Icon name="pin" size={26} />
+                                </span>
+                                <strong style={{ fontFamily: "'Clash Display', sans-serif", fontSize: 18 }}>{F.marker}</strong>
+                                <button type="button" className="f-btn f-btn-sm f-btn-ghost f-btn-inline" style={{ background: 'var(--v-surface)' }} onClick={() => setMap(true)}>{F.show}</button>
+                                <span className="f-muted" style={{ fontSize: 13, maxWidth: 320 }}>{F.mapNote}</span>
+                            </div>
+                        )}
+                        {map && <span className="f-pill" style={{ top: 16, left: 16, pointerEvents: 'none' }}>{F.marker}</span>}
+                    </div>
+                    <p className="f-muted" style={{ margin: '10px 0 0', fontSize: 14 }}>
+                        {F.fallback}{' '}
+                        <a href={place} {...ext} style={{ color: 'var(--v-accent-text)', fontWeight: 700 }}>{F.fallbackLink}</a>
+                    </p>
+                </div>
+            </div>
+        </section>
+    );
+}
+
+export function Contact({ offers, preset, page = false }) {
+    const { L, site } = useV7();
+    return (
+        <section id="contact" className="f-sec f-wrap" aria-labelledby="s-contact" style={{ paddingBottom: page && officePoint(site.contact) ? 88 : 112, paddingTop: page ? 40 : undefined }}>
             <div className="split" style={{ alignItems: 'start' }}>
                 <div>
                     {!page && (

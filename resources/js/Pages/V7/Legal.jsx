@@ -34,7 +34,7 @@ export default function Legal({ document }) {
               ['Accès et sécurité', 'Les demandes et documents sont stockés sur un espace non public, accessible aux seuls membres habilités de l’équipe FEIRRY. Les échanges avec le site sont chiffrés (HTTPS).'],
               ['Durée de conservation', 'Les demandes sont conservées le temps nécessaire à leur traitement et au suivi commercial ; la durée précise sera indiquée ici après validation.'],
               ['Vos droits', `Vous pouvez demander l’accès, la rectification ou la suppression de vos données en écrivant à ${c.email}.`],
-              ['Cookies', 'Le site n’utilise pas de cookies publicitaires ni d’outil de mesure d’audience à ce jour. Votre choix de thème et de langue est enregistré uniquement dans votre navigateur.'],
+              ['Cookies', 'Le site n’utilise pas de cookies publicitaires ni d’outil de mesure d’audience à ce jour. Votre choix de thème et de langue est enregistré uniquement dans votre navigateur. Sur la page Contact, la carte (OpenStreetMap) ne se charge que si vous la demandez, et l’itinéraire s’ouvre dans Google Maps : ces services appliquent alors leurs propres règles. FEIRRY ne demande jamais votre position.'],
           ]
         : [
               ['Data collected', 'Through the “My project” and “Coup de Pouce” forms: name, phone and/or email, information about your project and, if you wish, documents (drawings, land title, photos).'],
@@ -43,7 +43,7 @@ export default function Legal({ document }) {
               ['Access and security', 'Requests and documents are stored in a non-public space, accessible only to authorised members of the FEIRRY team. Exchanges with the site are encrypted (HTTPS).'],
               ['Retention', 'Requests are kept for as long as needed to process them and follow up; the exact period will be stated here once validated.'],
               ['Your rights', `You can ask to access, correct or delete your data by writing to ${c.email}.`],
-              ['Cookies', 'The site uses no advertising cookies and no audience measurement tool at present. Your theme and language choice is stored only in your browser.'],
+              ['Cookies', 'The site uses no advertising cookies and no audience measurement tool at present. Your theme and language choice is stored only in your browser. On the Contact page, the map (OpenStreetMap) only loads if you ask for it, and directions open in Google Maps: those services then apply their own rules. FEIRRY never asks for your location.'],
           ];
 
     const title = notice ? L.legalNotice : L.legalPrivacy;

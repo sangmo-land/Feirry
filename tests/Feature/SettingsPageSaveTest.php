@@ -38,4 +38,28 @@ class SettingsPageSaveTest extends TestCase
             ->call('save')
             ->assertHasErrors('data.contact__longitude');
     }
+
+    /* Additif Contact : la section « Où nous trouver ? » dépend du point GPS validé dans l'admin. */
+    public function test_contact_page_gets_no_position_until_feirry_saves_one(): void
+    {
+        $this->get('/mon-projet')->assertOk()->assertInertia(fn ($page) => $page
+            ->where('site.contact.latitude', null)
+            ->where('site.contact.longitude', null));
+
+        $this->assertStringNotContainsString('GeoCoordinates', $this->get('/mon-projet')->getContent());
+    }
+
+    public function test_a_saved_position_reaches_the_page_and_the_structured_data(): void
+    {
+        // Test values only: not FEIRRY's address.
+        Setting::put('contact.latitude', '4.050000', 'contact');
+        Setting::put('contact.longitude', '9.700000', 'contact');
+
+        $html = $this->get('/mon-projet')->assertOk()->assertInertia(fn ($page) => $page
+            ->where('site.contact.latitude', '4.050000')
+            ->where('site.contact.longitude', '9.700000'))->getContent();
+
+        $this->assertStringContainsString('"@type":"GeoCoordinates","latitude":4.05,"longitude":9.7', $html);
+        $this->assertStringContainsString('frame-src https://www.openstreetmap.org', $this->get('/mon-projet')->headers->get('Content-Security-Policy'));
+    }
 }

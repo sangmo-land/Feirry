@@ -1,5 +1,5 @@
 import { PageHead, useV7 } from '@/v7/core';
-import { Contact } from '@/v7/sections';
+import { Contact, FindUs } from '@/v7/sections';
 
 export default function MonProjet({ offers, preset }) {
     const { L } = useV7();
@@ -7,6 +7,7 @@ export default function MonProjet({ offers, preset }) {
         <>
             <PageHead crumbs={[[L.ctaHeader]]} eye={L.s11eye} title={L.projectPageTitle} lead={L.projectPageLead} />
             <Contact offers={offers} preset={preset} page />
+            <FindUs />
         </>
     );
 }

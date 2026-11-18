@@ -23,6 +23,8 @@ class CoupDePouceTest extends TestCase
         ContentInstaller::install();
         Storage::fake('local');
         Mail::fake();
+        // These tests cover the request flow itself; automatic booking has its own class.
+        config(['site.cdp.slots.consultation' => null, 'site.cdp.slots.visit' => null]);
     }
 
     private function open(array $over = []): Campaign

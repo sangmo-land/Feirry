@@ -37,9 +37,9 @@ return [
         'phone_secondary' => '+237 696 645 970',
         'phone_secondary_label' => 'Orange',
         'whatsapp' => '237670729579',
-        'email' => 'contact@feirry.co',
-        'email_rh' => 'contact@feirry.co',
-        'email_devis' => 'contact@feirry.co',
+        'email' => 'contact@feirry.org',
+        'email_rh' => 'contact@feirry.org',
+        'email_devis' => 'contact@feirry.org',
         // Opening hours not yet confirmed by FEIRRY: hidden until set in the admin.
         'hours_fr' => null,
         'hours_en' => null,
@@ -81,6 +81,20 @@ return [
         'pdf_max_kb' => (int) env('CDP_PDF_MAX_KB', 15360),
         'photo_max_files' => (int) env('CDP_PHOTO_MAX_FILES', 5),
         'photo_max_kb' => (int) env('CDP_PHOTO_MAX_KB', 8192),
+        /*
+        | Automatic booking (décision FEIRRY du 18/11/2026). Times are Africa/Douala.
+        | Days: 1 = Monday … 7 = Sunday. A booked slot is final for the applicant.
+        | Weekly quota = the edition's announced places (10 consultations, 5 visits).
+        | Consultations: Monday 9:00–16:00, 30 minutes each.
+        | Visits: Wednesday and Thursday, 8:30–17:30, three windows of three hours
+        | (travel included) — to be confirmed by FEIRRY.
+        */
+        'slots' => [
+            'consultation' => ['days' => [1], 'times' => ['09:00', '09:30', '10:00', '10:30', '11:00', '11:30', '12:00', '12:30', '13:00', '13:30', '14:00', '14:30', '15:00', '15:30']],
+            'visit' => ['days' => [3, 4], 'times' => ['08:30', '11:30', '14:30']],
+            // A slot can be booked until this many hours before it starts.
+            'lead_hours' => (int) env('CDP_SLOT_LEAD_HOURS', 24),
+        ],
         // Version of the privacy notice the applicant agreed to.
         'notice_version' => '2026-11-v1',
     ],

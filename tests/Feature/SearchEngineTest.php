@@ -181,4 +181,29 @@ class SearchEngineTest extends TestCase
 
         return $decoded;
     }
+
+    /* CDC correctif V3 — SEO-03, SEO-04 */
+
+    public function test_sitemap_lists_no_noindex_page(): void
+    {
+        $xml = $this->get('/sitemap.xml')->getContent();
+
+        $this->assertStringNotContainsString('mentions-legales', $xml);
+        $this->assertStringNotContainsString('confidentialite', $xml);
+        $this->assertStringNotContainsString('legal-notice', $xml);
+        $this->assertStringNotContainsString('/en/privacy', $xml);
+    }
+
+    public function test_structured_data_makes_no_unverified_claim(): void
+    {
+        preg_match('#<script type="application/ld\+json"[^>]*>(.*?)</script>#s', $this->get('/')->getContent(), $m);
+        $schema = json_decode($m[1] ?? '', true);
+
+        $this->assertIsArray($schema);
+        $this->assertSame(['Douala', 'Yaoundé', 'Cameroun'], $schema['areaServed']);
+
+        foreach (['dans les délais', 'aux normes', 'climat côtier', 'Logbessou'] as $claim) {
+            $this->assertFalse(str_contains($schema['description'], $claim), "Unverified claim in structured data: {$claim}");
+        }
+    }
 }

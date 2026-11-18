@@ -129,7 +129,8 @@ class Seo
             '@id' => static::organizationId(),
             'name' => SiteSettings::brandName(),
             'legalName' => SiteSettings::get('brand.legal_name', config('site.brand.legal_name')),
-            'description' => __('site.home.hero_lead', ['year' => config('site.brand.founded')]),
+            // Same sentence as the home page description: nothing here that the page does not say.
+            'description' => __('v7.seo.home.description'),
             'url' => rtrim(config('app.url'), '/').'/',
             'telephone' => $get('phone'),
             'email' => $get('email'),
@@ -140,7 +141,8 @@ class Seo
             'image' => static::asset(config('site.seo.default_image')),
             'logo' => static::asset(config('site.seo.logo', config('site.seo.default_image'))),
             'address' => static::postalAddress(),
-            'areaServed' => ['Douala', 'Yaoundé', 'Kribi', 'Limbé', 'Cameroun'],
+            // Only the places FEIRRY has confirmed (CDC correctif SEO-04).
+            'areaServed' => ['Douala', 'Yaoundé', 'Cameroun'],
             'sameAs' => array_values(array_filter(SiteSettings::socialLinks())),
         ];
 

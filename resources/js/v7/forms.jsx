@@ -213,6 +213,9 @@ export function ProjectWizard({ offers = [], preset = {} }) {
         }
     }, [form]);
 
+    // LEAD-01: a plot is only asked for when the visitor says one exists.
+    const hasLand = form.land_status === 'titre' || form.land_status === 'en_cours';
+
     const set = (k) => (v) => {
         setForm((f) => ({ ...f, [k]: v }));
         setErrors((e) => ({ ...e, [k]: undefined }));
@@ -223,7 +226,7 @@ export function ProjectWizard({ offers = [], preset = {} }) {
     const validate = (s) => {
         const e = {};
         if (s === 1 && !form.need) e.need = F.errType;
-        if (s === 2 && form.location.trim().length < 2) e.location = F.errLocation;
+        if (s === 2 && form.location.trim().length < 2) e.location = hasLand ? F.errLocation : F.errLocationWish;
         if (s === 3) {
             if (form.name.trim().length < 2) e.name = F.errName;
             if (!form.phone.trim() && !form.email.trim()) e.phone = F.errContact;
@@ -345,14 +348,19 @@ export function ProjectWizard({ offers = [], preset = {} }) {
                     {step === 2 && (
                         <>
                             <h3 id="wiz-title" style={{ margin: 0, fontSize: 22 }}>{F.q2}</h3>
-                            <Field id="w-location" label={F.location} error={errors.location}>
+                            <Choices round label={F.land} value={form.land_status} onPick={set('land_status')} options={Object.entries(F.lands).map(([v, t]) => [v, t])} />
+                            <Field id="w-location" label={hasLand ? F.location : F.locationWish} error={errors.location}>
                                 <Input id="w-location" value={form.location} onChange={set('location')} error={errors.location} autoComplete="address-level2" required />
                             </Field>
+                            {!hasLand && (
+                                <button type="button" className="f-choice round" style={{ alignSelf: 'flex-start' }} aria-pressed={form.location === F.locationUnknownValue} onClick={() => set('location')(form.location === F.locationUnknownValue ? '' : F.locationUnknownValue)}>
+                                    {F.locationUnknown}
+                                </button>
+                            )}
                             <Field id="w-programme" label={F.programme} hint={F.programmeHint} error={errors.programme}>
                                 <Input id="w-programme" value={form.programme} onChange={set('programme')} error={errors.programme} hint={F.programmeHint} />
                             </Field>
                             <Choices round label={F.phase} value={form.phase} onPick={set('phase')} options={Object.entries(F.phases).map(([v, t]) => [v, t])} />
-                            <Choices round label={F.land} value={form.land_status} onPick={set('land_status')} options={Object.entries(F.lands).map(([v, t]) => [v, t])} />
                             <div className="g2" style={{ gap: 12 }}>
                                 <Field id="w-size" label={F.size} error={errors.size}>
                                     <Input id="w-size" value={form.size} onChange={set('size')} error={errors.size} />

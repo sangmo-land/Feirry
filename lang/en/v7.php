@@ -31,6 +31,9 @@ return [
         'idempotency_key' => 'submission key',
     ],
     'errors' => [
+        'slot_required' => 'Please choose a slot for your appointment.',
+        'slot_taken' => 'This slot has just been booked. Please choose another one.',
+        'slot_week_full' => 'This week is full. Please choose a slot in another week.',
         'file_type' => 'This file type is not supported. Accepted formats: PDF for drawings; JPG, PNG or WebP for photos.',
         'file_size' => 'This file is larger than allowed. You can continue without it and send it later.',
         'phone' => 'Please enter a valid number (at least 9 digits).',

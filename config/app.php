@@ -65,7 +65,9 @@ return [
     |
     */
 
-    'timezone' => 'UTC',
+    // FEIRRY works on Douala time: edition dates, booked slots and admin lists
+    // are all read in that zone (CDC correctif CAMP-02).
+    'timezone' => env('APP_TIMEZONE', 'Africa/Douala'),
 
     /*
     |--------------------------------------------------------------------------

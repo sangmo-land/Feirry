@@ -13,7 +13,7 @@ export default function Offres({ offers }) {
                         <h2 style={{ margin: 0, fontSize: 28 }}>{L.offersCustomTitle}</h2>
                         <p className="f-muted" style={{ margin: '10px 0 0', lineHeight: 1.6 }}>{L.offersCustom}</p>
                     </div>
-                    <A className="f-btn f-btn-primary" href="/mon-projet?besoin=suivi">{L.offersCustomCta}</A>
+                    <A className="f-btn f-btn-primary" href="/mon-projet?besoin=autre">{L.offersCustomCta}</A>
                 </div>
             </section>
         </>

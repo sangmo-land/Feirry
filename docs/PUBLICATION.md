@@ -67,6 +67,16 @@ supprimé** : il reste visible dans l’admin.
 - Correctif important : le modèle `User` déclare maintenant l’accès au panneau Filament. Sans cela, Filament refuse
   tous les comptes dès que `APP_ENV` n’est pas `local`.
 
+## 2 bis-2. Coup de Pouce : réservation automatique (décision FEIRRY du 18/11/2026)
+
+- Migration `2026_11_18_000001_add_coup_de_pouce_slots` : colonnes `slot_key` et `seat_key` (uniques) sur `assistance_requests`,
+  et mise à jour de la phrase des conditions de l'édition pilote (seulement si le texte installé n'a pas été modifié). `php artisan migrate --force` suffit.
+- Fuseau de l'application : `Africa/Douala` par défaut (`APP_TIMEZONE`). Ne pas remettre `UTC` : les créneaux et les dates d'édition sont lus à l'heure de Douala.
+- Créneaux (`config/site.php`, clé `cdp.slots`) : consultations le lundi de 9 h à 16 h par tranches de 30 minutes ; visites le mercredi et le jeudi à 8 h 30, 11 h 30 et 14 h 30.
+  Réservable jusqu'à 24 h avant (`CDP_SLOT_LEAD_HOURS`). Plafond hebdomadaire = places annoncées de l'édition (10 consultations, 5 visites), modifiables dans l'admin.
+- Un créneau réservé met la demande au statut « Programmée » avec sa date. Passer une demande en « Hors périmètre » libère le créneau et la place.
+- Quand tous les créneaux sont pris, les demandes vont en liste d'attente (statut « En attente »).
+
 ## 2 ter. Sécurité (audit du 17/11/2026)
 
 - Partir du modèle **`docs/env-production.example`** (à copier en `.env` sur le serveur) : `APP_ENV=production`, `APP_DEBUG=false`, sessions chiffrées et

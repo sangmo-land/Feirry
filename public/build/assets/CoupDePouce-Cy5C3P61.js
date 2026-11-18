@@ -1,0 +1,1 @@
+import{i as e}from"./cdp-CoE7LOME.js";import{t}from"./react-BuixSKBN.js";var n=t();function r({campaign:t}){return(0,n.jsx)(e,{campaign:t})}export{r as default};

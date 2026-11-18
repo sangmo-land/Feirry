@@ -1,7 +1,7 @@
 import { A } from '@/v7/core';
 import { CdpForm, StateBadge, useCdp } from '@/v7/cdp';
 
-export default function CoupDePouceForm({ path, campaign, limits }) {
+export default function CoupDePouceForm({ path, campaign, limits, slots }) {
     const { C, L } = useCdp();
     const F = C.form;
     return (
@@ -20,7 +20,7 @@ export default function CoupDePouceForm({ path, campaign, limits }) {
                     <p className="f-lead" style={{ marginTop: 14, maxWidth: 480 }}>{F.intro[path]}</p>
                     <p className="f-muted" style={{ marginTop: 14, maxWidth: 480, lineHeight: 1.6 }}>{C.cards[path].text}</p>
                 </div>
-                <CdpForm path={path} campaign={campaign} limits={limits} />
+                <CdpForm path={path} campaign={campaign} limits={limits} slots={slots ?? []} />
             </div>
         </div>
     );

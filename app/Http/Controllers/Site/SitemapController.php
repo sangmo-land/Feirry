@@ -40,8 +40,8 @@ class SitemapController extends Controller
             ['cdp.visit', '0.6', 'weekly'],
             ['conseils', '0.7', 'weekly'],
             ['projet', '0.9', 'monthly'],
-            ['legal.notice', '0.3', 'yearly'],
-            ['legal.privacy', '0.3', 'yearly'],
+            // The legal pages are noindex until their text is approved (LEG-01):
+            // a sitemap must not list pages it asks crawlers to skip (SEO-03).
         ];
 
         $records = [

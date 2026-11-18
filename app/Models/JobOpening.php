@@ -57,7 +57,7 @@ class JobOpening extends Model
     public function toDetail(): array
     {
         return array_merge($this->toCard(), [
-            'description' => $this->tr('description'),
+            'description' => \App\Support\SafeHtml::clean($this->tr('description')),
             'requirements' => $this->tr('requirements') ?? [],
             'benefits' => $this->tr('benefits') ?? [],
         ]);

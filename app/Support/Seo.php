@@ -42,6 +42,10 @@ class Seo
             // survive that names a partial here and the content is present in
             // the HTML as delivered, before anything renders.
             'noscript' => $attributes['noscript'] ?? null,
+            // The above-the-fold image, preloaded so the client-rendered LCP
+            // does not wait for the bundle to discover it.
+            'preload' => $attributes['preload'] ?? null,
+            'preload_sizes' => $attributes['preload_sizes'] ?? null,
         ], []);
 
         View::share('seo', static::$data);

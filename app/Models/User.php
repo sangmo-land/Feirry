@@ -4,15 +4,19 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Database\Factories\UserFactory;
+use Filament\Auth\MultiFactor\App\Contracts\HasAppAuthentication;
+use Filament\Auth\MultiFactor\App\Contracts\HasAppAuthenticationRecovery;
+use Filament\Models\Contracts\FilamentUser;
+use Filament\Panel;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-#[Fillable(['name', 'email', 'password'])]
-#[Hidden(['password', 'remember_token'])]
-class User extends Authenticatable
+#[Fillable(['name', 'email', 'password', 'role'])]
+#[Hidden(['password', 'remember_token', 'app_authentication_secret', 'app_authentication_recovery_codes'])]
+class User extends Authenticatable implements FilamentUser, HasAppAuthentication, HasAppAuthenticationRecovery
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
@@ -27,6 +31,71 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'app_authentication_secret' => 'encrypted',
+            'app_authentication_recovery_codes' => 'encrypted:array',
         ];
+    }
+
+    public function getAppAuthenticationSecret(): ?string
+    {
+        return $this->app_authentication_secret;
+    }
+
+    public function saveAppAuthenticationSecret(#[\SensitiveParameter] ?string $secret): void
+    {
+        $this->forceFill(['app_authentication_secret' => $secret])->save();
+    }
+
+    public function getAppAuthenticationHolderName(): string
+    {
+        return $this->email;
+    }
+
+    public function getAppAuthenticationRecoveryCodes(): ?array
+    {
+        return $this->app_authentication_recovery_codes;
+    }
+
+    public function saveAppAuthenticationRecoveryCodes(#[\SensitiveParameter] ?array $codes): void
+    {
+        $this->forceFill(['app_authentication_recovery_codes' => $codes])->save();
+    }
+
+    /**
+     * Every team account with a known role may sign in to the admin.
+     * Without this, Filament refuses all accounts outside a local environment.
+     */
+    public function canAccessPanel(Panel $panel): bool
+    {
+        return array_key_exists($this->role ?? 'admin', self::ROLES);
+    }
+
+    /** Roles of the Coup de Pouce back-office (CDC Coup de Pouce §10). */
+    public const ROLES = [
+        'admin' => 'Administrateur technique',
+        'administration' => 'Administration FEIRRY',
+        'referent' => 'Référent technique',
+        'communication' => 'Communication',
+    ];
+
+    public function hasRole(string ...$roles): bool
+    {
+        return in_array($this->role ?? 'admin', $roles, true);
+    }
+
+    /** May open Coup de Pouce requests and their private documents. */
+    public function canSeeAssistanceRequests(): bool
+    {
+        return $this->hasRole('admin', 'administration', 'referent');
+    }
+
+    /** May see this particular request: referents only see what is assigned to them. */
+    public function canSeeAssistanceRequest(AssistanceRequest $request): bool
+    {
+        if ($this->hasRole('admin', 'administration')) {
+            return true;
+        }
+
+        return $this->hasRole('referent') && (int) $request->assigned_to === (int) $this->id;
     }
 }

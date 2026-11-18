@@ -70,7 +70,7 @@ class BlogController extends Controller
             'published_at' => $post->published_at?->toIso8601String(),
         ]);
 
-        return Inertia::render('Blog/Show', [
+        return Inertia::render('V7/Article', [
             'post' => $post->toDetail(),
             'related' => Post::published()
                 ->with(['category', 'author'])

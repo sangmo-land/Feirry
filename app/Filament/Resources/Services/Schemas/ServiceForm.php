@@ -63,6 +63,23 @@ class ServiceForm
                     FormFields::list("features_{$l}", 'Ce que comprend la prestation', 'Ajouter une prestation…'),
                 ]),
 
+                Section::make('Fiche expertise (site)')
+                    ->schema([
+                        \Filament\Forms\Components\Select::make('quote_need')
+                            ->label('Besoin présélectionné dans le formulaire « Mon projet »')
+                            ->options(['conception' => 'Conception', 'construction' => 'Construction', 'renovation' => 'Rénovation', 'suivi' => 'Suivi', 'autre' => 'Autre'])
+                            ->default('conception')->native(false),
+                        \Filament\Forms\Components\TextInput::make('cover_position')->label('Cadrage de l’image')->default('center 50%'),
+                    ])
+                    ->columns(2),
+
+                FormFields::localeTabs(fn (string $l) => [
+                    \Filament\Forms\Components\TextInput::make("family_{$l}")->label('Famille (sur-titre)')->maxLength(80),
+                    \Filament\Forms\Components\TagsInput::make("situations_{$l}")->label('Situations clients')->columnSpanFull(),
+                    \Filament\Forms\Components\TagsInput::make("deliverables_{$l}")->label('Livrables')->columnSpanFull(),
+                    \Filament\Forms\Components\Textarea::make("limits_{$l}")->label('Limites de la prestation')->rows(3)->columnSpanFull(),
+                ]),
+
                 Section::make('Visuels')
                     ->schema([
                         FormFields::image(),

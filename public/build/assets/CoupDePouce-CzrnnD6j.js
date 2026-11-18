@@ -1,0 +1,1 @@
+import{t as e}from"./react-BXXEWvlK.js";import{i as t}from"./cdp-Da_HPkbg.js";var n=e();function r({campaign:e}){return(0,n.jsx)(t,{campaign:e})}export{r as default};

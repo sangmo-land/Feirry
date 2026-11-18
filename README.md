@@ -28,12 +28,11 @@ APP_FALLBACK_LOCALE=fr
 
 **Accès au back-office** — `/admin`
 
-| | |
-|---|---|
-| Identifiant | `admin@feirry.org` |
-| Mot de passe | `feirry2026` |
+Aucun identifiant n’est stocké dans le dépôt. En local, `composer fresh` crée
+le compte `ADMIN_EMAIL` (par défaut admin@feirry.org) avec `ADMIN_PASSWORD`, ou
+affiche une seule fois un mot de passe aléatoire.
 
-> Changez ce mot de passe avant toute mise en ligne :
+> Pour changer un mot de passe :
 > `php artisan tinker --execute="App\Models\User::first()->update(['password' => Hash::make('…')]);"`
 
 Autres commandes utiles :

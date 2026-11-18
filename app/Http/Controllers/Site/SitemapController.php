@@ -31,22 +31,23 @@ class SitemapController extends Controller
          */
         $pages = [
             ['home', '1.0', 'weekly'],
-            ['about', '0.8', 'monthly'],
-            ['services.index', '0.9', 'monthly'],
-            ['projects.index', '0.9', 'weekly'],
-            ['process', '0.7', 'monthly'],
-            ['team', '0.6', 'monthly'],
-            ['blog.index', '0.8', 'weekly'],
-            ['careers.index', '0.7', 'weekly'],
-            ['faq', '0.6', 'monthly'],
-            ['contact', '0.8', 'monthly'],
-            ['quote', '0.9', 'monthly'],
+            ['feirry', '0.8', 'monthly'],
+            ['expertises', '0.9', 'monthly'],
+            ['projets', '0.9', 'weekly'],
+            ['offres', '0.9', 'monthly'],
+            ['cdp', '0.8', 'weekly'],
+            ['cdp.consultation', '0.6', 'weekly'],
+            ['cdp.visit', '0.6', 'weekly'],
+            ['conseils', '0.7', 'weekly'],
+            ['projet', '0.9', 'monthly'],
+            ['legal.notice', '0.3', 'yearly'],
+            ['legal.privacy', '0.3', 'yearly'],
         ];
 
         $records = [
-            ['services.show', Service::published()->get(), '0.8', 'monthly'],
-            ['projects.show', Project::published()->get(), '0.7', 'monthly'],
-            ['blog.show', Post::published()->get(), '0.6', 'monthly'],
+            ['expertises.show', Service::published()->get(), '0.8', 'monthly'],
+            ['projets.show', Project::published()->get(), '0.7', 'monthly'],
+            ['conseils.show', Post::published()->get(), '0.6', 'monthly'],
             ['careers.show', JobOpening::published()->get(), '0.5', 'weekly'],
         ];
 
@@ -83,6 +84,8 @@ class SitemapController extends Controller
             'Allow: /',
             'Disallow: /admin',
             'Disallow: /storage/applications',
+            'Disallow: /*?besoin=',
+            'Disallow: /*?offre=',
             // A URL that always redirects; letting a crawler queue and follow
             // it wastes budget on a page that never has content of its own.
             'Disallow: /langue/',

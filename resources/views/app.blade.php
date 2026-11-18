@@ -5,7 +5,7 @@
     $alternates = \App\Support\LocalePath::alternates(request()->path());
 @endphp
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', $locale) }}">
+<html lang="{{ str_replace('_', '-', $locale) }}" data-theme="dark">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -59,22 +59,38 @@
     <link rel="alternate" hreflang="x-default" href="{{ $alternates[config('site.default_locale')] }}">
 
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    @if (! empty($seo['preload']))
+        @php($lcp = $seo['preload'])
+        @if (preg_match('/-1280\.webp$/', $lcp))
+            <link rel="preload" as="image" href="{{ $lcp }}" imagesrcset="{{ collect([320, 640, 960, 1280, 1920])->map(fn ($w) => preg_replace('/-1280\.webp$/', "-{$w}.webp", $lcp)." {$w}w")->implode(', ') }}" imagesizes="{{ $seo['preload_sizes'] ?? '100vw' }}" fetchpriority="high">
+        @else
+            <link rel="preload" as="image" href="{{ $lcp }}" fetchpriority="high">
+        @endif
+    @endif
     <link rel="apple-touch-icon" href="/favicon.svg">
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Archivo:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,700;1,800&family=Manrope:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-
-    <script type="application/ld+json">
-        {!! json_encode($seo['schema'] ?? \App\Support\Seo::organizationSchema(), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}
+    {{-- Theme applied before first paint: no flash between dark and light (THE-01). --}}
+    <script nonce="{{ \Illuminate\Support\Facades\Vite::cspNonce() }}">
+        (function () {
+            var t = 'dark';
+            try { t = localStorage.getItem('feirry-theme') || 'dark'; } catch (e) {}
+            if (t !== 'light') t = 'dark';
+            document.documentElement.dataset.theme = t;
+            if (t === 'light') document.querySelector('meta[name="theme-color"]').setAttribute('content', '#faf7f2');
+        })();
     </script>
 
-    @routes
+    <link rel="preload" href="/fonts/clash/ClashDisplay-Bold.woff2" as="font" type="font/woff2" crossorigin>
+
+    <script type="application/ld+json" nonce="{{ \Illuminate\Support\Facades\Vite::cspNonce() }}">
+        {!! json_encode($seo['schema'] ?? \App\Support\Seo::organizationSchema(), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP) !!}
+    </script>
+
     @viteReactRefresh
     @vite(['resources/css/app.css', 'resources/js/app.jsx'])
     @inertiaHead
 </head>
-<body class="antialiased">
+<body class="antialiased v7-body">
     {{-- Everything React renders is absent from the response itself, so a
          reader that does not execute JavaScript gets an empty page. Pages that
          name a partial through Seo::set(['noscript' => ...]) put their content

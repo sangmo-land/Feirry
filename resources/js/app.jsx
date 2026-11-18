@@ -1,9 +1,15 @@
 import '../css/app.css';
+import '@fontsource/manrope/400.css';
+import '@fontsource/manrope/500.css';
+import '@fontsource/manrope/600.css';
+import '@fontsource/manrope/700.css';
+import '@fontsource/manrope/800.css';
+import '../css/v7.css';
 
 import { createInertiaApp } from '@inertiajs/react';
 import { createRoot, hydrateRoot } from 'react-dom/client';
 import { StrictMode } from 'react';
-import SiteLayout from '@/Layouts/SiteLayout';
+import V7Layout from '@/v7/Layout';
 
 const appName = import.meta.env.VITE_APP_NAME || 'FEIRRY';
 
@@ -21,18 +27,21 @@ createInertiaApp({
      */
     title: (title) => title || appName,
 
-    resolve: (name) => {
-        const pages = import.meta.glob('./Pages/**/*.jsx', { eager: true });
-        const page = pages[`./Pages/${name}.jsx`];
+    // Pages are split into their own chunks (CDC §10: code splitting).
+    resolve: async (name) => {
+        const pages = import.meta.glob('./Pages/**/*.jsx');
+        const load = pages[`./Pages/${name}.jsx`];
 
-        if (!page) {
+        if (!load) {
             throw new Error(`Inertia page not found: ./Pages/${name}.jsx`);
         }
 
-        // Every page gets the site chrome unless it opts out via `Page.layout = null`.
+        const page = await load();
+
+        // Every page gets the V7 chrome unless it opts out via `Page.layout = null`.
         page.default.layout =
             page.default.layout === undefined
-                ? (pageEl) => <SiteLayout>{pageEl}</SiteLayout>
+                ? (pageEl) => <V7Layout>{pageEl}</V7Layout>
                 : page.default.layout;
 
         return page;

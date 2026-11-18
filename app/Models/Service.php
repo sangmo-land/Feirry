@@ -18,6 +18,10 @@ class Service extends Model
         'gallery' => 'array',
         'features_fr' => 'array',
         'features_en' => 'array',
+        'situations_fr' => 'array',
+        'situations_en' => 'array',
+        'deliverables_fr' => 'array',
+        'deliverables_en' => 'array',
         'is_featured' => 'boolean',
         'is_published' => 'boolean',
     ];
@@ -50,6 +54,9 @@ class Service extends Model
             'features' => $this->tr('features') ?? [],
             'starting_price' => $this->starting_price,
             'is_featured' => $this->is_featured,
+            'family' => $this->tr('family'),
+            'cover_position' => $this->cover_position ?: 'center 50%',
+            'need' => $this->quote_need,
         ];
     }
 
@@ -58,6 +65,9 @@ class Service extends Model
         return array_merge($this->toCard(), [
             'body' => $this->tr('body'),
             'gallery' => Media::urls($this->gallery),
+            'situations' => $this->tr('situations') ?? [],
+            'deliverables' => $this->tr('deliverables') ?? [],
+            'limits' => $this->tr('limits'),
             'meta_title' => $this->meta_title,
             'meta_description' => $this->meta_description,
         ]);

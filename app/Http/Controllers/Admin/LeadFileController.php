@@ -1,0 +1,54 @@
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Models\AssistanceRequest;
+use App\Models\QuoteRequest;
+use Filament\Facades\Filament;
+use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\StreamedResponse;
+
+/**
+ * Serves a lead's private document to a signed-in administrator only.
+ * Files live on the private disk and have no public URL (CDC §09, UPL-01).
+ */
+class LeadFileController extends Controller
+{
+    public function __invoke(string $type, int $id, int $index): StreamedResponse
+    {
+        // Only administrators have accounts: the public site has no sign-up.
+        $user = auth()->user();
+        abort_unless($user !== null, 403);
+
+        if (method_exists($user, 'canAccessPanel')) {
+            abort_unless($user->canAccessPanel(Filament::getDefaultPanel()), 403);
+        }
+
+        $lead = match ($type) {
+            'quote' => QuoteRequest::findOrFail($id),
+            'assistance', 'assistance-report' => AssistanceRequest::findOrFail($id),
+            default => abort(404),
+        };
+
+        if ($lead instanceof QuoteRequest) {
+            // Project requests hold private plans: never for the communication or referent roles.
+            abort_unless($user->hasRole('admin', 'administration'), 403);
+        }
+
+        if ($lead instanceof AssistanceRequest) {
+            // Role checked on every download (CDC Coup de Pouce §22).
+            abort_unless(method_exists($user, 'canSeeAssistanceRequest') && $user->canSeeAssistanceRequest($lead), 403);
+        }
+
+        $list = $type === 'assistance-report' ? ($lead->reports ?? []) : ($lead->attachments ?? []);
+        $file = $list[$index] ?? abort(404);
+
+        if ($lead instanceof AssistanceRequest) {
+            $lead->log('download', ($type === 'assistance-report' ? 'Rapport téléchargé : ' : 'Pièce téléchargée : ').($file['name'] ?? 'document'));
+        }
+        abort_unless(Storage::disk('local')->exists($file['path']), 404);
+
+        return Storage::disk('local')->download($file['path'], $file['name'] ?? basename($file['path']));
+    }
+}

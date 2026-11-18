@@ -5,6 +5,7 @@ namespace App\Support;
 use App\Models\AssistanceRequest;
 use App\Models\Campaign;
 use Carbon\CarbonImmutable;
+use Illuminate\Support\Facades\Schema;
 
 /**
  * Coup de Pouce — bookable slots (CDC correctif CAMP-02).
@@ -45,9 +46,25 @@ class CdpSlots
         return $at && $at->format(self::FORMAT) === $slot ? $at->startOfMinute() : null;
     }
 
+    protected static ?bool $ready = null;
+
+    /**
+     * Booking needs the columns added by its migration. Until that migration
+     * has run on a server, the site keeps taking requests the previous way
+     * (no slot, handled by hand) instead of failing.
+     */
+    public static function ready(): bool
+    {
+        return static::$ready ??= Schema::hasColumn('assistance_requests', 'slot_key');
+    }
+
     /** Every slot of the edition that can still be reached, booked or not. */
     public static function grid(Campaign $campaign, string $path): array
     {
+        if (! static::ready()) {
+            return [];
+        }
+
         $config = config("site.cdp.slots.{$path}");
         if (! $config || ! $campaign->starts_at || ! $campaign->ends_at || static::quota($campaign, $path) === 0) {
             return [];

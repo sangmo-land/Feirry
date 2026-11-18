@@ -140,13 +140,14 @@ class SiteSettingsPage extends Page
                             ->label('Latitude')
                             ->numeric()
                             ->step('0.000001')
-                            ->required()
+                            // Optional: the map pin is simply not shown until FEIRRY gives its coordinates.
+                            ->requiredWith('contact__longitude')
                             ->placeholder('4.047588'),
                         TextInput::make('contact__longitude')
                             ->label('Longitude')
                             ->numeric()
                             ->step('0.000001')
-                            ->required()
+                            ->requiredWith('contact__latitude')
                             ->placeholder('9.728659'),
                         TextInput::make('contact__maps_url')
                             ->label('Lien « Nous trouver »')

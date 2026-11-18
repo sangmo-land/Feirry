@@ -160,6 +160,17 @@ function Footer() {
                 <div>
                     <Logo height={28} className="" />
                     <p style={{ margin: '14px 0 0', letterSpacing: '.16em', fontSize: 12, fontWeight: 700, color: 'var(--v-text)' }}>SHAPING A BRIGHTER TOMORROW</p>
+                    {/* Only the networks FEIRRY has filled in (admin › Paramètres du site). Names, no third-party logos. */}
+                    {SOCIAL.some(([k]) => site.social?.[k]) && (
+                        <nav aria-label={L.ft.social} style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 16 }}>
+                            {SOCIAL.filter(([k]) => site.social?.[k]).map(([k, name]) => (
+                                <a key={k} href={site.social[k]} target="_blank" rel="noopener noreferrer" className="f-chip" style={{ display: 'inline-flex', alignItems: 'center', textDecoration: 'none', color: 'var(--v-text)' }}>
+                                    {name}
+                                    <span className="sr-only"> {L.ft.newTab}</span>
+                                </a>
+                            ))}
+                        </nav>
+                    )}
                 </div>
                 <div>
                     <h2 style={{ color: 'var(--v-text)', fontWeight: 700, margin: '0 0 6px', fontSize: 14, fontFamily: 'Manrope, sans-serif' }}>{L.ft.office}</h2>
@@ -277,6 +288,8 @@ function Shell({ children }) {
         </div>
     );
 }
+
+const SOCIAL = [['facebook', 'Facebook'], ['instagram', 'Instagram'], ['tiktok', 'TikTok'], ['linkedin', 'LinkedIn'], ['youtube', 'YouTube']];
 
 export default function V7Layout({ children }) {
     return (

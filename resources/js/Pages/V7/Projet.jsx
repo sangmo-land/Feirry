@@ -1,8 +1,10 @@
 import { A, Icon, Img, PageHead, RoleBadges, useV7 } from '@/v7/core';
+import { GalleryGrid } from '@/v7/gallery';
 import { ProjectFacts } from '@/v7/sections';
 
 export default function Projet({ project: p, next }) {
     const { L } = useV7();
+    const hasGallery = (p.gallery?.length ?? 0) > 0;
     const need = (p.roles ?? []).includes('build') ? 'construction' : (p.roles ?? []).includes('follow') ? 'suivi' : 'conception';
     return (
         <>
@@ -17,6 +19,15 @@ export default function Projet({ project: p, next }) {
                     {p.provisional && <span className="f-pill" style={{ left: 16, bottom: 16 }}>{L.provisional}</span>}
                 </div>
             </section>
+            {hasGallery && (
+                <section className="f-wrap" style={{ paddingTop: 32 }} aria-labelledby="proj-gal">
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 12, flexWrap: 'wrap', marginBottom: 14 }}>
+                        <h2 id="proj-gal" style={{ margin: 0, fontSize: 26 }}>{L.galEye}</h2>
+                        <span className="f-muted" style={{ fontSize: 14 }}>{p.gallery.length} {p.gallery.length > 1 ? L.galImages : L.galImage} · {L.galHint}</span>
+                    </div>
+                    <GalleryGrid images={p.gallery} title={p.title} />
+                </section>
+            )}
             <section className="f-sec f-wrap" style={{ paddingTop: 48 }}>
                 <div className="split" style={{ alignItems: 'start' }}>
                     <div>
@@ -34,18 +45,18 @@ export default function Projet({ project: p, next }) {
                         <p className="f-muted" style={{ margin: '16px 0 0', fontSize: 14 }}>{L.ficheNote}</p>
                     </div>
                     <div>
-                        <div className="f-eye muted">{L.galEye}</div>
-                        <div className="g2" style={{ marginTop: 10, gap: 10 }}>
-                            {(p.gallery?.length ? p.gallery : [p.cover_image]).slice(0, 4).map((src, i) => (
-                                <div key={src + i} className="f-media" style={{ height: 150, borderRadius: 14 }}>
-                                    <Img src={src} pos={p.cover_position} sizes="25vw" alt={i === 0 ? '' : `${p.title} ${i + 1}`} />
+                        {!hasGallery && (
+                            <>
+                                <div className="f-eye muted">{L.galEye}</div>
+                                <div className="g2" style={{ marginTop: 10, gap: 10 }}>
+                                    <div className="f-media" style={{ height: 150, borderRadius: 14 }}>
+                                        <Img src={p.cover_image} pos={p.cover_position} sizes="25vw" alt="" />
+                                    </div>
+                                    <div style={{ height: 150, borderRadius: 14, border: '1.5px dashed var(--v-line-strong)', display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: 10, boxSizing: 'border-box', color: 'var(--v-muted)', fontSize: 13, fontWeight: 600 }}>{L.galSite}</div>
                                 </div>
-                            ))}
-                            {!p.gallery?.length && (
-                                <div style={{ height: 150, borderRadius: 14, border: '1.5px dashed var(--v-line-strong)', display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: 10, boxSizing: 'border-box', color: 'var(--v-muted)', fontSize: 13, fontWeight: 600 }}>{L.galSite}</div>
-                            )}
-                        </div>
-                        <div className="f-card f-panel" style={{ marginTop: 20, padding: 24 }}>
+                            </>
+                        )}
+                        <div className="f-card f-panel" style={{ marginTop: hasGallery ? 0 : 20, padding: 24 }}>
                             <h2 style={{ margin: '0 0 14px', fontSize: 22 }}>{L.projectCta}</h2>
                             <A className="f-btn f-btn-primary" href={`/mon-projet?besoin=${need}`} style={{ width: '100%' }}>{L.ctaPrimary}</A>
                         </div>

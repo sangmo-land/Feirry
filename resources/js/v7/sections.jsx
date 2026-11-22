@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { A, CheckList, CloseButton, Dialog, Icon, Img, Media, RoleBadges, SectionHead, formatDate, rolesText, stageText, useV7, waLink } from './core';
 import { ProjectWizard } from './forms';
+import { MediaSwitcher } from './gallery';
 
 const img = (name) => `/storage/v7/${name}-1280.webp`;
 
@@ -186,11 +187,10 @@ export function ProjectFiche({ p, onClose }) {
         <Dialog open={!!p} onClose={onClose} label={p?.title}>
             {p && (
                 <>
-                    <div className="f-media" style={{ height: 260 }}>
-                        <Img src={p.cover_image} alt={`${L.provisional} : ${p.title}`} pos={p.cover_position} />
+                    <MediaSwitcher cover={p.cover_image} images={p.gallery} title={p.title} pos={p.cover_position}>
                         <CloseButton overlay onClick={onClose} label={L.closeFiche} />
                         {p.provisional && <span className="f-pill" style={{ left: 16, bottom: 16 }}>{L.provisional}</span>}
-                    </div>
+                    </MediaSwitcher>
                     <div className="f-pad" style={{ padding: '30px 32px 32px' }}>
                         <div className="f-eye">{L.ficheEye}</div>
                         <h3 style={{ margin: '8px 0 4px', fontSize: 30 }}>{p.title}</h3>
@@ -271,6 +271,7 @@ export function Projects({ projects, page = false }) {
                         <div className="f-media" style={{ height: 440 }}>
                             <Img src={sel.cover_image} alt={`${L.provisional} : ${sel.title}`} pos={sel.cover_position} sizes="(max-width: 980px) 100vw, 60vw" priority={page} />
                             {sel.provisional && <span className="f-pill" style={{ top: 16, left: 16 }}>{L.provisional}</span>}
+                            {sel.gallery?.length > 0 && <span className="f-pill" style={{ right: 16, bottom: 16 }}>{sel.gallery.length + 1} {L.galImages}</span>}
                         </div>
                         <div className="f-pad" style={{ padding: '30px 32px 32px' }}>
                             <div className="chips" style={{ marginBottom: 14 }}>

@@ -87,6 +87,8 @@ class Project extends Model
             'location' => $this->location,
             'city' => $this->city,
             'cover_image' => Media::url($this->cover_image),
+            // Every uploaded picture, so the list preview can show them too.
+            'gallery' => Media::urls($this->gallery),
             'year' => $this->year,
             'status' => $this->status,
             'progress' => $this->progress,

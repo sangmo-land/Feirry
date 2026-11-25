@@ -1,10 +1,16 @@
+import { useCallback, useMemo, useState } from 'react';
 import { A, Icon, Img, PageHead, RoleBadges, useV7 } from '@/v7/core';
-import { GalleryGrid } from '@/v7/gallery';
+import { GalleryGrid, Lightbox, ZoomCover, projectImages } from '@/v7/gallery';
 import { ProjectFacts } from '@/v7/sections';
 
 export default function Projet({ project: p, next }) {
     const { L } = useV7();
     const hasGallery = (p.gallery?.length ?? 0) > 0;
+    // One list for the whole page: the cover, then the gallery. Any picture opens it.
+    const images = useMemo(() => projectImages(p), [p]);
+    const fromCover = p.cover_image ? 1 : 0;
+    const [shot, setShot] = useState(null);
+    const closeShot = useCallback(() => setShot(null), []);
     const need = (p.roles ?? []).includes('build') ? 'construction' : (p.roles ?? []).includes('follow') ? 'suivi' : 'conception';
     return (
         <>
@@ -14,10 +20,9 @@ export default function Projet({ project: p, next }) {
                 </div>
             </PageHead>
             <section className="f-wrap" style={{ paddingTop: 32 }}>
-                <div className="f-card f-media" style={{ height: 'min(62vw, 560px)', minHeight: 260 }}>
-                    <Img src={p.cover_image} alt={`${L.provisional} : ${p.title}`} pos={p.cover_position} sizes="100vw" priority />
+                <ZoomCover className="f-card" src={p.cover_image} title={p.title} pos={p.cover_position} sizes="100vw" priority count={images.length} onOpen={() => setShot(0)} height="min(62vw, 560px)" style={{ minHeight: 260 }}>
                     {p.provisional && <span className="f-pill" style={{ left: 16, bottom: 16 }}>{L.provisional}</span>}
-                </div>
+                </ZoomCover>
             </section>
             {hasGallery && (
                 <section className="f-wrap" style={{ paddingTop: 32 }} aria-labelledby="proj-gal">
@@ -25,7 +30,7 @@ export default function Projet({ project: p, next }) {
                         <h2 id="proj-gal" style={{ margin: 0, fontSize: 26 }}>{L.galEye}</h2>
                         <span className="f-muted" style={{ fontSize: 14 }}>{p.gallery.length} {p.gallery.length > 1 ? L.galImages : L.galImage} · {L.galHint}</span>
                     </div>
-                    <GalleryGrid images={p.gallery} title={p.title} />
+                    <GalleryGrid images={p.gallery} total={images.length} onOpen={(i) => setShot(i + fromCover)} />
                 </section>
             )}
             <section className="f-sec f-wrap" style={{ paddingTop: 48 }}>
@@ -75,6 +80,7 @@ export default function Projet({ project: p, next }) {
                     </A>
                 )}
             </nav>
+            <Lightbox images={images} index={shot} title={p.title} onIndex={setShot} onClose={closeShot} />
         </>
     );
 }

@@ -1,7 +1,7 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { A, CheckList, CloseButton, Dialog, Icon, Img, Media, RoleBadges, SectionHead, formatDate, rolesText, stageText, useV7, waLink } from './core';
 import { ProjectWizard } from './forms';
-import { MediaSwitcher } from './gallery';
+import { GalleryStrip, Lightbox, ZoomCover, projectImages } from './gallery';
 
 const img = (name) => `/storage/v7/${name}-1280.webp`;
 
@@ -181,16 +181,17 @@ export function Expertises({ expertises, page = false }) {
 /* 04 — PROJETS */
 const FILTERS = ['all', 'architecture', 'construction', 'design', 'suivi'];
 
-export function ProjectFiche({ p, onClose }) {
+export function ProjectFiche({ p, onClose, onZoom }) {
     const { L } = useV7();
     return (
         <Dialog open={!!p} onClose={onClose} label={p?.title}>
             {p && (
                 <>
-                    <MediaSwitcher cover={p.cover_image} images={p.gallery} title={p.title} pos={p.cover_position}>
+                    <ZoomCover src={p.cover_image} title={p.title} pos={p.cover_position} count={projectImages(p).length} onOpen={() => onZoom(0)} height={260}>
                         <CloseButton overlay onClick={onClose} label={L.closeFiche} />
                         {p.provisional && <span className="f-pill" style={{ left: 16, bottom: 16 }}>{L.provisional}</span>}
-                    </MediaSwitcher>
+                    </ZoomCover>
+                    <GalleryStrip images={p.gallery} from={p.cover_image ? 1 : 0} onOpen={onZoom} />
                     <div className="f-pad" style={{ padding: '30px 32px 32px' }}>
                         <div className="f-eye">{L.ficheEye}</div>
                         <h3 style={{ margin: '8px 0 4px', fontSize: 30 }}>{p.title}</h3>
@@ -237,11 +238,16 @@ export function Projects({ projects, page = false }) {
     const [filter, setFilter] = useState('all');
     const [selId, setSelId] = useState(projects[0]?.id);
     const [fiche, setFiche] = useState(false);
+    const [shot, setShot] = useState(null);
+    const closeShot = useCallback(() => setShot(null), []);
+    const closeFiche = useCallback(() => setFiche(false), []);
     const inCat = (p, f) => f === 'all' || (p.families ?? []).includes(f);
     const shown = projects.filter((p) => inCat(p, filter));
     const sel = shown.find((p) => p.id === selId) ?? shown[0];
+    const selImages = useMemo(() => projectImages(sel), [sel]);
 
     const pick = (f) => {
+        setShot(null);
         setFilter(f);
         setSelId((projects.find((p) => inCat(p, f)) ?? projects[0])?.id);
     };
@@ -268,11 +274,9 @@ export function Projects({ projects, page = false }) {
             ) : (
                 <div className="gal">
                     <div className="f-card f-panel" style={{ overflow: 'hidden' }}>
-                        <div className="f-media" style={{ height: 440 }}>
-                            <Img src={sel.cover_image} alt={`${L.provisional} : ${sel.title}`} pos={sel.cover_position} sizes="(max-width: 980px) 100vw, 60vw" priority={page} />
+                        <ZoomCover key={sel.id} className="f-swap" src={sel.cover_image} title={sel.title} pos={sel.cover_position} sizes="(max-width: 980px) 100vw, 60vw" priority={page} count={selImages.length} onOpen={() => setShot(0)} height={440}>
                             {sel.provisional && <span className="f-pill" style={{ top: 16, left: 16 }}>{L.provisional}</span>}
-                            {sel.gallery?.length > 0 && <span className="f-pill" style={{ right: 16, bottom: 16 }}>{sel.gallery.length + 1} {L.galImages}</span>}
-                        </div>
+                        </ZoomCover>
                         <div className="f-pad" style={{ padding: '30px 32px 32px' }}>
                             <div className="chips" style={{ marginBottom: 14 }}>
                                 <RoleBadges roles={sel.roles} />
@@ -299,7 +303,7 @@ export function Projects({ projects, page = false }) {
                     </div>
                     <div className="thumbs">
                         {shown.map((p) => (
-                            <button key={p.id} type="button" onClick={() => setSelId(p.id)} aria-pressed={p.id === sel.id} className="f-tile" style={{ flex: 'none', display: 'flex', gap: 14, alignItems: 'center', padding: 10, borderRadius: 18, border: `1px solid ${p.id === sel.id ? '#FE5000' : 'var(--v-line)'}`, background: 'var(--v-surface)', color: 'var(--v-text)', cursor: 'pointer', textAlign: 'left', fontFamily: 'Manrope, sans-serif', minWidth: 260 }}>
+                            <button key={p.id} type="button" onClick={() => { setShot(null); setSelId(p.id); }} aria-pressed={p.id === sel.id} className="f-tile" style={{ flex: 'none', display: 'flex', gap: 14, alignItems: 'center', padding: 10, borderRadius: 18, border: `1px solid ${p.id === sel.id ? '#FE5000' : 'var(--v-line)'}`, background: 'var(--v-surface)', color: 'var(--v-text)', cursor: 'pointer', textAlign: 'left', fontFamily: 'Manrope, sans-serif', minWidth: 260 }}>
                                 <span className="f-media" style={{ width: 92, height: 72, borderRadius: 12, flex: 'none', display: 'block' }}>
                                     <Img src={p.cover_image} pos={p.cover_position} sizes="92px" />
                                 </span>
@@ -321,7 +325,8 @@ export function Projects({ projects, page = false }) {
                     </A>
                 </div>
             )}
-            <ProjectFiche p={fiche ? sel : null} onClose={() => setFiche(false)} />
+            <ProjectFiche p={fiche ? sel : null} onClose={closeFiche} onZoom={setShot} />
+            <Lightbox images={selImages} index={sel ? shot : null} title={sel?.title ?? ''} onIndex={setShot} onClose={closeShot} />
         </section>
     );
 }

@@ -62,4 +62,16 @@ class ProjectGalleryTest extends TestCase
         $this->assertStringNotContainsString('.slice(0, 4)', $source);
         $this->assertStringContainsString('GalleryGrid', $source);
     }
+
+    public function test_any_picture_of_the_project_page_opens_the_viewer(): void
+    {
+        $page = file_get_contents(resource_path('js/Pages/V7/Projet.jsx'));
+        $list = file_get_contents(resource_path('js/v7/sections.jsx'));
+
+        // The cover is a button too: nobody has to scroll down to the gallery first.
+        $this->assertStringContainsString('ZoomCover', $page);
+        $this->assertStringContainsString('<Lightbox', $page);
+        $this->assertStringContainsString('ZoomCover', $list);
+        $this->assertStringContainsString('<Lightbox', $list);
+    }
 }

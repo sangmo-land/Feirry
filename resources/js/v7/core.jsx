@@ -83,6 +83,7 @@ const PATHS = {
     lock: 'M6 11h12v10H6zM8 11V7a4 4 0 0 1 8 0v4', chat: 'M21 11.5a8.4 8.4 0 0 1-12.4 7.4L3 21l2.1-5.4A8.4 8.4 0 1 1 21 11.5z',
     phone: 'M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 0-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z', mail: 'M3 5h18v14H3zM3 6l9 7 9-7',
     minus: 'M5 12h14', file: 'M7 3h7l5 5v13H7zM14 3v5h5',
+    expand: 'M15 3h6v6M21 3l-7 7M9 21H3v-6M3 21l7-7',
 };
 
 export function Icon({ name, size = 20, stroke = 2, color = 'currentColor', style }) {
@@ -141,6 +142,10 @@ export function Media({ src, alt, pos, height, ratio, sizes, priority, provision
 /* Dialog: focus trap, Escape, focus restored, background locked       */
 /* ------------------------------------------------------------------ */
 
+/* Open dialogs, oldest first. Only the last one answers the keyboard, so a
+   lightbox opened over a project sheet closes alone on Escape. */
+const openDialogs = [];
+
 export function Dialog({ open, onClose, label, children, width = 760, className = 'f-modal', panelClass = 'f-dialog' }) {
     const panel = useRef(null);
     const opener = useRef(null);
@@ -155,7 +160,11 @@ export function Dialog({ open, onClose, label, children, width = 760, className 
         const focusables = () => panel.current?.querySelectorAll('a[href], button:not([disabled]), input, select, textarea, [tabindex]:not([tabindex="-1"])') ?? [];
         window.setTimeout(() => (focusables()[0] ?? panel.current)?.focus(), 30);
 
+        const me = {};
+        openDialogs.push(me);
+
         const onKey = (e) => {
+            if (openDialogs[openDialogs.length - 1] !== me) return;
             if (e.key === 'Escape') {
                 e.preventDefault();
                 onClose();
@@ -177,6 +186,7 @@ export function Dialog({ open, onClose, label, children, width = 760, className 
         document.addEventListener('keydown', onKey);
         return () => {
             document.removeEventListener('keydown', onKey);
+            openDialogs.splice(openDialogs.indexOf(me), 1);
             html.style.overflow = prev;
             opener.current?.focus?.();
         };

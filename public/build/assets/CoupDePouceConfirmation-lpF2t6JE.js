@@ -1,0 +1,1 @@
+import{t as e}from"./cdp-BjKFCX2S.js";import{t}from"./react-BuixSKBN.js";var n=t();function r({reference:t,message:r,waiting:i,slot:a,mode:o}){return(0,n.jsx)(`div`,{className:`f-wrap f-pagehead`,style:{paddingBottom:112},children:(0,n.jsx)(e,{reference:t,message:r,waiting:i,slot:a,mode:o})})}export{r as default};

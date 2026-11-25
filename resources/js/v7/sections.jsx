@@ -506,12 +506,24 @@ export function ArticleCard({ post }) {
 }
 
 export function upcomingPosts(L) {
-    return L.upcoming.map(([name, pos, cat, title]) => ({ cover_image: img(name), pos, cat, title }));
+    return L.upcoming.map(([name, pos, cat, title, key]) => ({ cover_image: img(name), pos, cat, title, key }));
+}
+
+/**
+ * The six advice subjects are announced before they are written. Each
+ * announcement carries the slug its article will have, so a published article
+ * replaces its own announcement and leaves the five others standing: the page
+ * never drops from six cards to one the day the first article goes live.
+ */
+export function adviceList(L, posts) {
+    const published = posts ?? [];
+    const done = new Set(published.map((p) => p.slug));
+    return [...published, ...upcomingPosts(L).filter((u) => !done.has(u.key))];
 }
 
 export function Advice({ posts }) {
     const { L } = useV7();
-    const list = posts?.length ? posts : upcomingPosts(L);
+    const list = adviceList(L, posts);
     return (
         <section id="conseils" className="f-sec f-wrap" aria-labelledby="s-adv">
             <SectionHead id="s-adv" eye={L.s10eye} title={L.s10title} lead={L.s10lead} />

@@ -10,7 +10,7 @@ export function Hero() {
     const { L } = useV7();
     return (
         <section id="accueil" className="f-hero" style={{ position: 'relative', minHeight: 760, display: 'flex', alignItems: 'flex-end', overflow: 'hidden', background: '#0B090B' }}>
-            <Img src={img('japoma5')} alt={L.heroAlt} pos="center 30%" sizes="100vw" priority className="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+            <Img src={img('yassahero')} alt={L.heroAlt} pos="center 40%" sizes="100vw" priority className="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
             <div aria-hidden="true" className="hide-mob" style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, rgba(11,9,11,.92) 0%, rgba(11,9,11,.78) 38%, rgba(11,9,11,.3) 66%, rgba(11,9,11,.05) 100%)' }} />
             <div aria-hidden="true" className="hide-mob" style={{ position: 'absolute', inset: 0, background: 'linear-gradient(0deg, rgba(11,9,11,.9) 0%, rgba(11,9,11,.25) 38%, rgba(11,9,11,0) 60%)' }} />
             <div aria-hidden="true" className="only-mob" style={{ position: 'absolute', inset: 0, background: 'linear-gradient(0deg, rgba(11,9,11,.96) 0%, rgba(11,9,11,.88) 48%, rgba(11,9,11,.35) 78%, rgba(11,9,11,.15) 100%)' }} />

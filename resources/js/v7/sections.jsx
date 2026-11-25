@@ -566,7 +566,6 @@ export function officePoint(contact) {
 
 export function FindUs() {
     const { L, site } = useV7();
-    const [map, setMap] = useState(false);
     const c = site.contact ?? {};
     const point = officePoint(c);
     if (!point) return null;
@@ -575,8 +574,9 @@ export function FindUs() {
     const at = `${point.lat},${point.lng}`;
     const route = `https://www.google.com/maps/dir/?api=1&destination=${at}`;
     const place = c.maps_url || `https://www.google.com/maps/search/?api=1&query=${at}`;
-    const d = 0.0045;
-    const embed = `https://www.openstreetmap.org/export/embed.html?bbox=${point.lng - d},${point.lat - d * 0.62},${point.lng + d},${point.lat + d * 0.62}&layer=mapnik&marker=${at}`;
+    // Half-width of the view, in degrees: about 500 m across, enough to show the crossroads.
+    const d = 0.0022;
+    const embed = `https://www.openstreetmap.org/export/embed.html?bbox=${point.lng - d},${point.lat - d * 0.62},${point.lng + d},${point.lat + d * 0.62}&layer=mapnik`;
     const ext = { target: '_blank', rel: 'noopener noreferrer' };
 
     return (
@@ -618,24 +618,23 @@ export function FindUs() {
                     <p className="f-muted" style={{ margin: 0, fontSize: 13, lineHeight: 1.55 }}>{F.routeNote}</p>
                 </div>
                 <div>
-                    <div className="f-card f-media" style={{ position: 'relative', minHeight: 380, height: '100%', border: '1px solid var(--v-line)', background: 'var(--v-surface)' }}>
-                        {map ? (
-                            <iframe title={F.mapTitle} src={embed} loading="lazy" referrerPolicy="no-referrer" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 0 }} />
-                        ) : (
-                            <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 14, padding: 24, textAlign: 'center', backgroundImage: 'linear-gradient(var(--v-line) 1px, transparent 1px), linear-gradient(90deg, var(--v-line) 1px, transparent 1px)', backgroundSize: '44px 44px' }}>
-                                <span className="f-icon-tile" style={{ width: 56, height: 56, borderRadius: 999, background: '#FE5000', color: '#0B090B' }}>
-                                    <Icon name="pin" size={26} />
-                                </span>
-                                <strong style={{ fontFamily: "'Clash Display', sans-serif", fontSize: 18 }}>{F.marker}</strong>
-                                <button type="button" className="f-btn f-btn-sm f-btn-ghost f-btn-inline" style={{ background: 'var(--v-surface)' }} onClick={() => setMap(true)}>{F.show}</button>
-                                <span className="f-muted" style={{ fontSize: 13, maxWidth: 320 }}>{F.mapNote}</span>
-                            </div>
-                        )}
-                        {map && <span className="f-pill" style={{ top: 16, left: 16, pointerEvents: 'none' }}>{F.marker}</span>}
+                    {/* The map is a picture here, not a control: it cannot be dragged, so the
+                        orange pin stays on the building, and one click anywhere opens the route. */}
+                    <div className="f-card find-map">
+                        <iframe className="find-map-frame" title={F.mapTitle} src={embed} loading="lazy" referrerPolicy="no-referrer" tabIndex={-1} />
+                        <a className="find-map-link" href={route} {...ext} aria-label={`${F.route} : ${F.marker} ${F.newTab}`}>
+                            <span className="f-pill" style={{ top: 16, left: 16 }}>{F.marker}</span>
+                            <span className="find-pin-spot" aria-hidden="true" />
+                            <span className="find-pin" aria-hidden="true" />
+                            <span className="f-pill find-cta" style={{ right: 16, bottom: 16 }} aria-hidden="true">
+                                <Icon name="nav" size={14} stroke={2.2} />
+                                {F.route}
+                            </span>
+                        </a>
                     </div>
                     <p className="f-muted" style={{ margin: '10px 0 0', fontSize: 14 }}>
-                        {F.fallback}{' '}
-                        <a href={place} {...ext} style={{ color: 'var(--v-accent-text)', fontWeight: 700 }}>{F.fallbackLink}</a>
+                        {F.tap}{' '}
+                        <a href="https://www.openstreetmap.org/copyright" {...ext} style={{ color: 'var(--v-accent-text)', fontWeight: 700 }}>{F.osm}</a>
                     </p>
                 </div>
             </div>

@@ -126,6 +126,24 @@ html body.v7-body { background: var(--v-bg); color: var(--v-text); }
 .gal { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr); gap: 16px; }
 .thumbs { display: flex; flex-direction: column; gap: 12px; }
 
+/* Head-office map: always dark, shown at once, one click opens the route. */
+.find-map { position: relative; min-height: 380px; height: 100%; overflow: hidden; border: 1px solid var(--v-line); background: #0b090b; }
+/* Oversized on every side so the embed's own buttons and credit fall outside the frame;
+   the centre, where the pin sits, does not move. The credit is repeated under the map. */
+.find-map-frame { position: absolute; inset: -64px; width: calc(100% + 128px); height: calc(100% + 128px); border: 0; pointer-events: none; filter: invert(1) hue-rotate(180deg) brightness(1.25) contrast(0.95) saturate(0.55); }
+.find-map-link { position: absolute; inset: 0; display: block; background: radial-gradient(circle at 50% 50%, transparent 0, transparent 38%, rgba(11, 9, 11, 0.55) 100%); cursor: pointer; }
+.find-map-link:focus-visible { outline: 3px solid #fe5000; outline-offset: -3px; }
+.find-map-link .f-pill { pointer-events: none; }
+/* A drop whose tip is the exact point: the square is turned 45°, so its sharp corner
+   ends 34px under its centre, and the margins lift it by that much. */
+.find-pin { position: absolute; left: 50%; top: 50%; width: 48px; height: 48px; margin: -58px 0 0 -24px; border-radius: 50% 50% 50% 0; background: #fe5000; transform: rotate(-45deg); display: flex; align-items: center; justify-content: center; box-shadow: -6px 8px 22px rgba(0, 0, 0, 0.5); transition: margin-top 0.3s cubic-bezier(0.22, 1, 0.36, 1); }
+.find-pin::after { content: ''; width: 16px; height: 16px; border-radius: 999px; background: #0b090b; }
+.find-pin-spot { position: absolute; left: 50%; top: 50%; width: 14px; height: 14px; margin: -7px 0 0 -7px; border-radius: 999px; background: rgba(254, 80, 0, 0.35); }
+.find-pin-spot::before { content: ''; position: absolute; inset: 0; border-radius: inherit; border: 2px solid #fe5000; animation: find-pulse 2.4s ease-out infinite; }
+.find-map-link:hover .find-pin { margin-top: -64px; }
+.find-cta { display: inline-flex; align-items: center; gap: 6px; transition: background 0.25s, color 0.25s; }
+.find-map-link:hover .find-cta { background: #fe5000; color: #0b090b; }
+@keyframes find-pulse { from { transform: scale(1); opacity: 0.9; } to { transform: scale(4.5); opacity: 0; } }
 /* Project gallery: any picture opens the lightbox; every change is animated. */
 .f-zoom { position: absolute; inset: 0; display: block; width: 100%; height: 100%; padding: 0; border: 0; background: none; cursor: zoom-in; }
 .f-zoom:focus-visible { outline: 3px solid #fe5000; outline-offset: -3px; }

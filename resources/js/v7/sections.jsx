@@ -517,8 +517,10 @@ export function upcomingPosts(L) {
  */
 export function adviceList(L, posts) {
     const published = posts ?? [];
-    const done = new Set(published.map((p) => p.slug));
-    return [...published, ...upcomingPosts(L).filter((u) => !done.has(u.key))];
+    const byKey = new Map(published.map((p) => [p.slug, p]));
+    const planned = upcomingPosts(L).map((u) => byKey.get(u.key) ?? u);
+    const extra = published.filter((p) => !L.upcoming.some(([, , , , key]) => key === p.slug));
+    return [...extra, ...planned];
 }
 
 export function Advice({ posts }) {

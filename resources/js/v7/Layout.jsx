@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { A, Dialog, Icon, ThemeProvider, useTheme, useV7, waLink } from './core';
 import { CDP } from './cdp-i18n';
+import { siWhatsapp } from 'simple-icons';
 
 const NAV = [
     ['/', 'home'],
@@ -284,7 +285,9 @@ function Shell({ children }) {
             <Footer />
             <aside aria-label="WhatsApp">
                 <a className="hide-mob" href={waLink(site)} aria-label={L.waAria} style={{ position: 'fixed', right: 24, bottom: 24, zIndex: 30, width: 60, height: 60, borderRadius: 999, background: '#FE5000', color: '#0B090B', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 12px 30px rgba(254,80,0,.35)' }}>
-                    <Icon name="chat" size={26} />
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                        <path d={siWhatsapp.path} />
+                    </svg>
                 </a>
             </aside>
             <TabBar onMenu={() => setMenu(true)} menuOpen={menu} />

@@ -211,7 +211,7 @@ return [
         'spontaneous' => 'Speculative application',
         'cv' => 'CV (PDF, 5 MB max.)',
         'cover_letter' => 'Cover letter',
-        'success' => 'Application received. We will get back to you within 15 days.',
+        'success' => 'Application received.',
         'why_join' => 'Why join us',
     ],
 

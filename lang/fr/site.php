@@ -211,7 +211,7 @@ return [
         'spontaneous' => 'Candidature spontanée',
         'cv' => 'CV (PDF, 5 Mo max.)',
         'cover_letter' => 'Lettre de motivation',
-        'success' => 'Candidature reçue. Nous revenons vers vous sous 15 jours.',
+        'success' => 'Candidature reçue.',
         'why_join' => 'Pourquoi nous rejoindre',
     ],
 

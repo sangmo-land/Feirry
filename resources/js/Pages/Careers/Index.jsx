@@ -5,7 +5,7 @@ import { Button, Icon, Section, SectionHeading } from '@/Components/Ui';
 import { JobCard } from '@/Components/Cards';
 import { Reveal } from '@/Components/Motion';
 import { PageHero } from '@/Sections/Hero';
-import { CtaBand, Crumb, SplitFeature } from '@/Sections/Shared';
+import { CtaBand, Crumb } from '@/Sections/Shared';
 
 export default function CareersIndex({ openings = [], departments = [] }) {
     const { t, site } = useSite();
@@ -43,46 +43,12 @@ export default function CareersIndex({ openings = [], departments = [] }) {
                 </div>
             </PageHero>
 
-            {/* Why join */}
-            <Section size="lg">
-                <div className="shell">
-                    <SplitFeature
-                        eyebrow={t('careers.why_join')}
-                        title="Des chantiers exigeants, une entreprise qui tient ses engagements"
-                        image="/storage/sections/careers-why-join.jpg"
-                        imageAlt="Équipe FEIRRY sur un chantier"
-                        stat={{ value: 340, suffix: '', label: 'Collaborateurs en CDI' }}
-                    >
-                        <p>
-                            Sur 385 collaborateurs, 340 sont en contrat à durée indéterminée. Nous préférons
-                            former durablement plutôt que recruter au coup par coup, parce qu'un ouvrage que
-                            l'on garantit dix ans se construit avec des gens qui connaissent nos méthodes.
-                        </p>
-                        <ul className="space-y-3 pt-2">
-                            {[
-                                'Salaires versés le 28 de chaque mois, sans exception',
-                                'Assurance santé familiale prise en charge',
-                                'Plan de formation individualisé et certifications financées',
-                                'Équipements de protection fournis et renouvelés',
-                                'Prime de performance indexée sur les résultats du chantier',
-                            ].map((item) => (
-                                <li key={item} className="flex items-start gap-3 text-sm text-concrete-700">
-                                    <Icon name="check" className="mt-0.5 size-4 shrink-0 text-brand-deep" strokeWidth={2.4} />
-                                    {item}
-                                </li>
-                            ))}
-                        </ul>
-                    </SplitFeature>
-                </div>
-            </Section>
-
             {/* Openings */}
             <Section tone="muted" size="lg" id="offres">
                 <div className="shell">
                     <SectionHeading
                         eyebrow={t('careers.open_positions')}
                         title={`${openings.length} poste${openings.length > 1 ? 's' : ''} ouvert${openings.length > 1 ? 's' : ''}`}
-                        lead="Chaque candidature reçoit une réponse, retenue ou non, sous quinze jours."
                     />
 
                     {departments.length > 1 && (
@@ -139,9 +105,7 @@ export default function CareersIndex({ openings = [], departments = [] }) {
                                     Aucune offre ne correspond à votre profil ?
                                 </h2>
                                 <p className="mt-5 max-w-2xl text-sm leading-relaxed text-concrete-600 sm:text-base">
-                                    Envoyez-nous votre CV. Nous conservons les candidatures pendant douze mois
-                                    et nous recontactons systématiquement les profils techniques lorsqu'un
-                                    poste s'ouvre.
+                                    Envoyez-nous votre CV par e-mail.
                                 </p>
                             </div>
 
@@ -163,9 +127,9 @@ export default function CareersIndex({ openings = [], departments = [] }) {
 
             <CtaBand
                 title="Une question sur nos recrutements ?"
-                lead="Notre responsable RH répond directement aux candidats."
+                lead="Écrivez-nous par e-mail."
                 primary={{ href: `mailto:${site.contact?.email_rh}`, label: t('common.write_us') }}
-                secondary={{ href: '/equipe', label: t('team.title') }}
+                secondary={{ href: '/feirry', label: t('footer.company') }}
             />
         </>
     );
